@@ -7,6 +7,7 @@ use Concrete\Core\Database\EntityManager\Provider\ProviderAggregateInterface;
 use Concrete\Core\Database\EntityManager\Provider\StandardPackageProvider;
 use Concrete\Core\Package\Package;
 use OAuth\ServiceFactory;
+use OAuth\UserData\ExtractorFactory;
 
 /**
  * The package controller.
@@ -95,10 +96,13 @@ class Controller extends Package implements ProviderAggregateInterface
 
     public function on_start()
     {
-        $this->app->extend('oauth/factory/service', function (ServiceFactory $factory) {
+        $this->app->extend('oauth/factory/service', static function (ServiceFactory $factory) {
             return $factory->registerService('keycloak', \KeycloakAuth\Service::class);
         });
-        $extractor = $this->app->make('oauth/factory/extractor');
-        $extractor->addExtractorMapping(\KeycloakAuth\Service::class, \KeycloakAuth\Extractor::class);
+        $this->app->extend('oauth/factory/extractor', static function (ExtractorFactory $factory) {
+            $factory->addExtractorMapping(\KeycloakAuth\Service::class, \KeycloakAuth\Extractor::class);
+
+            return $factory;
+        });
     }
 }

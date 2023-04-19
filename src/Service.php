@@ -47,7 +47,7 @@ class Service extends AbstractService
     {
         return true;
     }
-    
+
     /**
      * @return \KeycloakAuth\Entity\Server|null
      */
@@ -73,7 +73,7 @@ class Service extends AbstractService
     {
         return clone $this->baseApiUri;
     }
-    
+
     /**
      * {@inheritdoc}
      *
@@ -132,7 +132,7 @@ class Service extends AbstractService
     {
         return static::SERVICE_ID;
     }
-    
+
     /**
      * {@inheritdoc}
      *

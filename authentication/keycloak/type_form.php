@@ -16,7 +16,6 @@ $monospaceAttr = ($ui->majorVersion >= 9 ? ['class' => 'font-monospace'] : ['sty
     'autocomplete' => 'off',
     'spellcheck' => 'false',
 ];
-echo preg_replace('/<script\b/i', '<script lang="ignore-me" ', $form->getAutocompletionDisabler());
 ?>
 <div id="keycloakauth-config" v-cloak>
     <div v-if="visible">

@@ -20,8 +20,8 @@ use KeycloakAuth\Entity\Server;
 use KeycloakAuth\ServiceFactory;
 use KeycloakAuth\UI;
 use League\Url\Url;
-use Throwable;
 use OAuth\Common\Token\Exception\ExpiredTokenException;
+use Throwable;
 
 class Controller extends GenericOauth2TypeController
 {
@@ -310,6 +310,7 @@ EOT
     protected function isValid()
     {
         $this->getExtractor();
+
         return parent::isValid();
     }
 
