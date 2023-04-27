@@ -10,6 +10,7 @@ use Concrete\Core\Form\Service\Form;
 use Concrete\Core\Form\Service\Widget\GroupSelector;
 use Concrete\Core\Http\Client\Client;
 use Concrete\Core\Http\Request;
+use Concrete\Core\Package\PackageService;
 use Concrete\Core\Routing\RedirectResponse;
 use Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface;
 use Concrete\Core\User\Group\GroupList;
@@ -40,13 +41,19 @@ class Controller extends GenericOauth2TypeController
      */
     protected $config;
 
-    public function __construct(AuthenticationType $type = null, ServiceFactory $factory, ResolverManagerInterface $urlResolver, Repository $config)
+    /**
+     * @var \Concrete\Core\Package\PackageService
+     */
+    protected $packageService;
+
+    public function __construct(AuthenticationType $type = null, ServiceFactory $factory, ResolverManagerInterface $urlResolver, Repository $config, PackageService $packageService)
     {
-        $this->request = Request::getInstance();
         parent::__construct($type);
+        $this->request = Request::getInstance();
         $this->factory = $factory;
         $this->urlResolver = $urlResolver;
         $this->config = $config;
+        $this->packageService = $packageService;
     }
 
     /**
@@ -66,8 +73,10 @@ class Controller extends GenericOauth2TypeController
      */
     public function getAuthenticationTypeIconHTML()
     {
-        $svgData = file_get_contents(DIR_BASE_CORE . '/images/authentication/community/concrete.svg');
-        $publicSrc = '/concrete/images/authentication/community/concrete.svg';
+        $relPath = '/images/authentication/keycloak_auth.svg';
+        $pkgController = $this->packageService->getClass('keycloak_auth');
+        $svgData = file_get_contents($pkgController->getPackagePath() . $relPath);
+        $publicSrc = REL_DIR_PACKAGES  . $relPath;
 
         return "<div class='ccm-concrete-authentication-type-svg' data-src='{$publicSrc}'>{$svgData}</div>";
     }
