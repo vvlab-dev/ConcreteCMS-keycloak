@@ -45,38 +45,22 @@ class Extractor extends LazyExtractor
 
     public function emailNormalizer($data)
     {
-        if (isset($data['claims'])) {
-            return $this->claim(array_get($data, 'claims.email'));
-        }
-
-        return array_get($data, 'email', null);
+        return $this->getNormalizedValue($data, 'email', 'email');
     }
 
     public function firstNameNormalizer($data)
     {
-        if (isset($data['claims'])) {
-            return $this->claim(array_get($data, 'claims.given_name'));
-        }
-
-        return array_get($data, 'first_name', null);
+        return $this->getNormalizedValue($data, 'given_name', 'first_name');
     }
 
     public function lastNameNormalizer($data)
     {
-        if (isset($data['claims'])) {
-            return $this->claim(array_get($data, 'claims.family_name'));
-        }
-
-        return array_get($data, 'last_name', null);
+        return $this->getNormalizedValue($data, 'family_name', 'last_name');
     }
 
     public function usernameNormalizer($data)
     {
-        if (isset($data['claims'])) {
-            return $this->claim(array_get($data, 'claims.preferred_username'));
-        }
-
-        return array_get($data, 'username', null);
+        return $this->getNormalizedValue($data, 'preferred_username', 'username');
     }
 
     /**
@@ -145,5 +129,21 @@ class Extractor extends LazyExtractor
         }
 
         return $claim->getValue();
+    }
+
+    /**
+     * @var \ArrayAccess|array $data
+     * @var string $claimMember
+     * @var string $dataMember
+     *
+     * @return mixed|null
+     */
+    protected function getNormalizedValue($data, $claimMember, $dataMember)
+    {
+        if (isset($data['claims'])) {
+            return $this->claim(array_get($data, 'claims.' . $claimMember));
+        }
+
+        return array_get($data, $dataMember, null);
     }
 }

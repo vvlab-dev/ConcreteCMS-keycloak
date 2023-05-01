@@ -15,6 +15,7 @@ use Concrete\Core\Routing\RedirectResponse;
 use Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface;
 use Concrete\Core\User\Group\GroupList;
 use Concrete\Core\User\User;
+use Concrete\Core\User\UserInfoRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use KeycloakAuth\Entity\Server;
@@ -22,6 +23,7 @@ use KeycloakAuth\ServiceFactory;
 use KeycloakAuth\UI;
 use League\Url\Url;
 use OAuth\Common\Token\Exception\ExpiredTokenException;
+use OAuth\UserData\Extractor\ExtractorInterface;
 use Throwable;
 
 class Controller extends GenericOauth2TypeController
@@ -46,7 +48,12 @@ class Controller extends GenericOauth2TypeController
      */
     protected $packageService;
 
-    public function __construct(AuthenticationType $type = null, ServiceFactory $factory, ResolverManagerInterface $urlResolver, Repository $config, PackageService $packageService)
+    /**
+     * @var \Concrete\Core\User\UserInfoRepository
+     */
+    protected $userInfoRepository;
+
+    public function __construct(AuthenticationType $type = null, ServiceFactory $factory, ResolverManagerInterface $urlResolver, Repository $config, PackageService $packageService, UserInfoRepository $userInfoRepository)
     {
         parent::__construct($type);
         $this->request = Request::getInstance();
@@ -54,6 +61,7 @@ class Controller extends GenericOauth2TypeController
         $this->urlResolver = $urlResolver;
         $this->config = $config;
         $this->packageService = $packageService;
+        $this->userInfoRepository = $userInfoRepository;
     }
 
     /**
@@ -242,15 +250,15 @@ EOT
             throw new UserMessageException(t('You are already logged in.'));
         }
         $service = $this->getService();
-        $code = $this->request->get('code');
+        $authorizationCode = $this->request->get('code');
         if ($service->needsStateParameterInAuthUrl()) {
             $state = $state ?: '';
         }
-        $token = $service->requestAccessToken($code, $state);
-        if (!$token) {
+        $accessToken = $service->requestAccessToken($authorizationCode, $state);
+        if (!$accessToken) {
             throw new UserMessageException(t('Failed to complete authentication.'));
         }
-        $this->setToken($token);
+        $this->setToken($accessToken);
         $user = $this->attemptAuthentication();
         if (!$user) {
             throw new UserMessageException(t('No local user account associated with this user, please log in with a local account and connect your account from your user profile.'));
@@ -321,6 +329,26 @@ EOT
         $this->getExtractor();
 
         return parent::isValid();
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \Concrete\Core\Authentication\Type\OAuth\GenericOauthTypeController::attemptAuthentication()
+     */
+    protected function attemptAuthentication()
+    {
+        if ($this->isValid()) {
+            $extractor = $this->getExtractor();
+            $userID = $this->getBoundUserID($extractor->getUniqueId());
+            if ($userID && $userID > 0) {
+                $user = User::getByUserID($userID);
+                if ($user && !$user->isError()) {
+                    $this->updateExistingUser($user, $extractor);
+                }
+            }
+        }
+        return parent::attemptAuthentication();
     }
 
     private function setCommonData()
@@ -451,5 +479,48 @@ EOT
     private function getCallbackUrl()
     {
         return (string) $this->urlResolver->resolve(['/ccm/system/authentication/oauth2/' . $this->getHandle() . '/callback']);
+    }
+
+    private function updateExistingUser(User $userService, ExtractorInterface $extractor)
+    {
+        if ($extractor->supportsVerifiedEmail() && !$extractor->isEmailVerified()) {
+            throw new UserMessageException(t('Please verify your email with this service before attempting to log in.'));
+        }
+        $email = null;
+        $userInfo = null;
+        if ($extractor->supportsEmail()) {
+            $email = $extractor->getEmail();
+            if (!$email) {
+                return;
+            }
+            $userInfo = $this->userInfoRepository->getByEmail($email);
+            if ($userInfo && (int) $userInfo->getUserID() !== (int) $userService->getUserID()) {
+                throw new UserMessageException(t('Another user already exists with the provided email address.'));
+            }
+        } else {
+            $userInfo = $this->userInfoRepository->getByID($userService->getUserID());
+        }
+        $userEntity = $userInfo->getEntityObject();
+        if ($email) {
+            $userEntity->setUserEmail($email);
+        }
+        if ($extractor->supportsFirstName()) {
+            $firstName = $extractor->getFirstName();
+            if ($firstName) {
+                $key = \UserAttributeKey::getByHandle('first_name');
+                if ($key) {
+                    $userInfo->setAttribute($key, $firstName);
+                }
+            }
+        }
+        if ($extractor->supportsLastName()) {
+            $lastName = $extractor->getLastName();
+            if ($lastName) {
+                $key = \UserAttributeKey::getByHandle('last_name');
+                if ($key) {
+                    $userInfo->setAttribute($key, $lastName);
+                }
+            }
+        }
     }
 }
