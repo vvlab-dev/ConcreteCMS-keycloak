@@ -9,7 +9,9 @@ defined('C5_EXECUTE') or die('Access denied.');
  * @var string $callbackUrl
  * @var bool $enableDetach
  * @var KeycloakAuth\Entity\Server[] $servers
+ * @var bool $logoutOnLogoutEnabled
  * @var KeycloakAuth\UI $ui
+ * @var Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface $urlResolver
  */
 
 $monospaceAttr = ($ui->majorVersion >= 9 ? ['class' => 'font-monospace'] : ['style' => 'font-family: monospace;']) + [
@@ -150,6 +152,54 @@ $monospaceAttr = ($ui->majorVersion >= 9 ? ['class' => 'font-monospace'] : ['sty
                             ?>
                         </div>
                     </div>
+                    <div class="<?= $ui->formGroup ?> row">
+                        <div class="col col-md-12">
+                            <?= $form->label('', t('Options')) ?>
+                            <div class="form-check">
+                                <?php
+                                if ($logoutOnLogoutEnabled) {
+                                    ?>
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        v-bind:id="`logoutOnLogout_${index}`"
+                                        v-bind:name="`logoutOnLogout_${index}`"
+                                        v-model="server.logoutOnLogout"
+                                        value="1"
+                                    />
+                                    <?php
+                                } else {
+                                    ?>
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        v-bind:id="`logoutOnLogout_${index}`"
+                                        disabled="disabled"
+                                    />
+                                    <?php
+                                }
+                                ?>
+                                <label class="form-check-label" v-bind:for="`logoutOnLogout_${index}`">
+                                    <?= t('Logout from authentication server when logging out from this website') ?>
+                                </label>
+                                <?php
+                                if ($logoutOnLogoutEnabled) {
+                                    ?>
+                                    <div class="small alert alert-info" v-if="server.logoutOnLogout">
+                                        <?= t('You may want to set the valid post logout redirect URL to: %s', '<br /><code>' . h((string) $urlResolver->resolve(['/'])) . '</code>') ?>
+                                    </div>
+                                    <?php
+                                } else {
+                                    ?>
+                                    <div class="small alert alert-info">
+                                        <?= t('This feature requires Concrete CMS version %s or later', '9.2.1') ?>
+                                    </div>
+                                    <?php
+                                }
+                                ?>
+                            </div>
+                        </div>
+                    </div>
                     <div class="<?= $ui->formGroup ?>" v-if="multiServer">
                         <?= $form->label('', t('Use this server for email addresses matching any of these regular expressions'), ['v-bind:for' => '`emailRegexes_${index}`']) ?>
                         <textarea
@@ -215,6 +265,7 @@ function initialize(Vue, config)
                     'clientID' => $server->getClientID(),
                     'clientSecret' => $server->getClientSecret(),
                     'registrationEnabled' => $server->isRegistrationEnabled(),
+                    'logoutOnLogout' => $server->isLogoutOnLogout(),
                     'registrationGroupID' => $server->getRegistrationGroupID(),
                     'emailRegexes' => implode("\n", $server->getEmailRegexes()),
                     '_showPassword' => false,
@@ -269,6 +320,7 @@ function initialize(Vue, config)
                     clientID: '',
                     clientSecret: '',
                     registrationEnabled: false,
+                    logoutOnLogout: false,
                     registrationGroupID: null,
                     emailRegexes: '',
                     _showPassword: false,

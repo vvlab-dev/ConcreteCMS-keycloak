@@ -5,9 +5,11 @@ namespace Concrete\Package\KeycloakAuth;
 use Concrete\Core\Authentication\AuthenticationType;
 use Concrete\Core\Database\EntityManager\Provider\ProviderAggregateInterface;
 use Concrete\Core\Database\EntityManager\Provider\StandardPackageProvider;
+use Concrete\Core\Events\EventDispatcher;
 use Concrete\Core\Package\Package;
-use OAuth\ServiceFactory;
-use OAuth\UserData\ExtractorFactory;
+use Concrete\Core\User\Event\Logout;
+use KeycloakAuth\BeforeLogoutListener;
+use KeycloakAuth\ServiceProvider;
 
 /**
  * The package controller.
@@ -96,13 +98,21 @@ class Controller extends Package implements ProviderAggregateInterface
 
     public function on_start()
     {
-        $this->app->extend('oauth/factory/service', static function (ServiceFactory $factory) {
-            return $factory->registerService('keycloak', \KeycloakAuth\Service::class);
-        });
-        $this->app->extend('oauth/factory/extractor', static function (ExtractorFactory $factory) {
-            $factory->addExtractorMapping(\KeycloakAuth\Service::class, \KeycloakAuth\Extractor::class);
+        $this->app->make(ServiceProvider::class)->register();
+        $this->hookEvents();
+    }
 
-            return $factory;
+    private function hookEvents()
+    {
+        $dispatcher = $this->app->make(EventDispatcher::class);
+        if (method_exists($dispatcher, 'getEventDispatcher')) {
+            $dispatcher = $dispatcher->getEventDispatcher();
+        }
+        $dispatcher->addListener('on_before_user_logout', function($event) {
+            if ($event instanceof Logout) {
+                $listener = $this->app->make(BeforeLogoutListener::class);
+                $listener($event);
+            }
         });
     }
 }

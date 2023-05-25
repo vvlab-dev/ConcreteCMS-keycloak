@@ -98,6 +98,15 @@ class Server
      */
     protected $emailRegexes;
 
+    /**
+     * Logout from server too when logging out from Concrete?
+     *
+     * @Doctrine\ORM\Mapping\Column(type="boolean", nullable=false, options={"comment": "Logout from server too when logging out from Concrete?"})
+     *
+     * @var bool
+     */
+    protected $logoutOnLogout;
+    
     public function __construct()
     {
         $this->id = null;
@@ -170,11 +179,11 @@ class Server
     {
         try {
             $arr = json_decode($this->openIDConfiguration, true, 512, defined('JSON_THROW_ON_ERROR') ? JSON_THROW_ON_ERROR : 0);
-
-            return is_array($arr) ? $arr : [];
         } catch (JsonException $_) {
             return [];
         }
+
+        return is_array($arr) ? $arr : [];
     }
 
     /**
@@ -318,6 +327,30 @@ class Server
         );
         $this->emailRegexes = implode("\n", $value);
 
+        return $this;
+    }
+
+    /**
+     * Logout from server too when logging out from Concrete?
+     *
+     * @return bool
+     */
+    public function isLogoutOnLogout()
+    {
+        return $this->logoutOnLogout;
+    }
+    
+    /**
+     * Logout from server too when logging out from Concrete?
+     *
+     * @param bool $value
+     *
+     * @return $this
+     */
+    public function setLogoutOnLogout($value)
+    {
+        $this->logoutOnLogout = $value;
+        
         return $this;
     }
 }

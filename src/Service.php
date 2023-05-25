@@ -134,6 +134,17 @@ class Service extends AbstractService
     }
 
     /**
+     * @return \OAuth\Common\Token\TokenInterface|null
+     */
+    public function getLastStoredAccessToken()
+    {
+        $storage = $this->getStorage();
+        $service = $this->service();
+
+        return $storage->hasAccessToken($service) ? $storage->retrieveAccessToken($service) : null;
+    }
+
+    /**
      * {@inheritdoc}
      *
      * @see \OAuth\OAuth2\Service\AbstractService::parseAccessTokenResponse()

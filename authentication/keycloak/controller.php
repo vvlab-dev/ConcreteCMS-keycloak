@@ -13,6 +13,7 @@ use Concrete\Core\Http\Request;
 use Concrete\Core\Package\PackageService;
 use Concrete\Core\Routing\RedirectResponse;
 use Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface;
+use Concrete\Core\User\Event\Logout;
 use Concrete\Core\User\Group\GroupList;
 use Concrete\Core\User\User;
 use Concrete\Core\User\UserInfoRepository;
@@ -125,6 +126,8 @@ EOT
             $servers = $repo->findBy([], ['sort' => 'ASC']);
         }
         $this->set('servers', $servers);
+        $this->set('logoutOnLogoutEnabled', class_exists(Logout::class));
+        $this->set('urlResolver', $this->urlResolver);
     }
 
     /**
@@ -394,7 +397,8 @@ EOT
         $emailRegexes = isset($args["emailRegexes_{$index}"]) ? $args["emailRegexes_{$index}"] : null;
         $registrationEnabled = isset($args["registrationEnabled_{$index}"]) ? $args["registrationEnabled_{$index}"] : null;
         $registrationGroupID = isset($args["registrationGroupID_{$index}"]) ? $args["registrationGroupID_{$index}"] : null;
-        if ($serverID === null && $realmRootUrl === null && $clientID === null && $clientSecret === null && $emailRegexes === null && $registrationEnabled === null && $registrationGroupID === null) {
+        $logoutOnLogout = isset($args["logoutOnLogout_{$index}"]) ? $args["logoutOnLogout_{$index}"] : null;
+        if ($serverID === null && $realmRootUrl === null && $clientID === null && $clientSecret === null && $emailRegexes === null && $registrationEnabled === null && $registrationGroupID === null && $logoutOnLogout === null) {
             return null;
         }
         if (empty($serverID)) {
@@ -426,6 +430,7 @@ EOT
             ->setRegistrationEnabled(!empty($registrationEnabled))
             ->setRegistrationGroupID($registrationGroupID)
             ->setEmailRegexes(preg_split('/\s*[\r\n]+\s*/', trim($emailRegexes), -1, PREG_SPLIT_NO_EMPTY))
+            ->setLogoutOnLogout(class_exists(Logout::class) ? !empty($logoutOnLogout) : false)
         ;
 
         return $server;
