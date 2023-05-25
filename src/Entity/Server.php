@@ -106,7 +106,7 @@ class Server
      * @var bool
      */
     protected $logoutOnLogout;
-    
+
     public function __construct()
     {
         $this->id = null;
@@ -339,7 +339,7 @@ class Server
     {
         return $this->logoutOnLogout;
     }
-    
+
     /**
      * Logout from server too when logging out from Concrete?
      *
@@ -350,7 +350,7 @@ class Server
     public function setLogoutOnLogout($value)
     {
         $this->logoutOnLogout = $value;
-        
+
         return $this;
     }
 }

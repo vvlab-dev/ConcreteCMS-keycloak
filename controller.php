@@ -108,7 +108,7 @@ class Controller extends Package implements ProviderAggregateInterface
         if (method_exists($dispatcher, 'getEventDispatcher')) {
             $dispatcher = $dispatcher->getEventDispatcher();
         }
-        $dispatcher->addListener('on_before_user_logout', function($event) {
+        $dispatcher->addListener('on_before_user_logout', function ($event) {
             if ($event instanceof Logout) {
                 $listener = $this->app->make(BeforeLogoutListener::class);
                 $listener($event);

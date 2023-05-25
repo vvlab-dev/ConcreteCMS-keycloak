@@ -85,7 +85,7 @@ class Controller extends GenericOauth2TypeController
         $relPath = '/images/authentication/keycloak_auth.svg';
         $pkgController = $this->packageService->getClass('keycloak_auth');
         $svgData = file_get_contents($pkgController->getPackagePath() . $relPath);
-        $publicSrc = REL_DIR_PACKAGES  . $relPath;
+        $publicSrc = REL_DIR_PACKAGES . $relPath;
 
         return "<div class='ccm-concrete-authentication-type-svg' data-src='{$publicSrc}'>{$svgData}</div>";
     }
@@ -351,6 +351,7 @@ EOT
                 }
             }
         }
+
         return parent::attemptAuthentication();
     }
 

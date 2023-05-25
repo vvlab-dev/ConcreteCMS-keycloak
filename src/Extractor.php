@@ -132,9 +132,9 @@ class Extractor extends LazyExtractor
     }
 
     /**
-     * @var \ArrayAccess|array $data
-     * @var string $claimMember
-     * @var string $dataMember
+     * @param \ArrayAccess|array $data
+     * @param string $claimMember
+     * @param string $dataMember
      *
      * @return mixed|null
      */

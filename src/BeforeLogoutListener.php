@@ -2,14 +2,14 @@
 
 namespace KeycloakAuth;
 
-use Concrete\Core\User\Event\Logout;
 use Concrete\Core\Authentication\AuthenticationType;
 use Concrete\Core\Authentication\Type\OAuth\BindingService;
-use Concrete\Core\Http\ResponseFactoryInterface;
 use Concrete\Core\Http\Response;
+use Concrete\Core\Http\ResponseFactoryInterface;
+use Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface;
+use Concrete\Core\User\Event\Logout;
 use Exception;
 use Throwable;
-use Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface;
 
 class BeforeLogoutListener
 {
