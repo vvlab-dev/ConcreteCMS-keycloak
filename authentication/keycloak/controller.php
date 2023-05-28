@@ -10,16 +10,18 @@ use Concrete\Core\Form\Service\Form;
 use Concrete\Core\Form\Service\Widget\GroupSelector;
 use Concrete\Core\Http\Client\Client;
 use Concrete\Core\Http\Request;
+use Concrete\Core\Http\ResponseFactoryInterface;
 use Concrete\Core\Package\PackageService;
 use Concrete\Core\Routing\RedirectResponse;
 use Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface;
-use Concrete\Core\User\Event\Logout;
 use Concrete\Core\User\Group\GroupList;
 use Concrete\Core\User\User;
 use Concrete\Core\User\UserInfoRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use KeycloakAuth\Entity\Server;
+use KeycloakAuth\Extractor;
+use KeycloakAuth\Service;
 use KeycloakAuth\ServiceFactory;
 use KeycloakAuth\UI;
 use League\Url\Url;
@@ -126,8 +128,9 @@ EOT
             $servers = $repo->findBy([], ['sort' => 'ASC']);
         }
         $this->set('servers', $servers);
-        $this->set('logoutOnLogoutEnabled', class_exists(Logout::class));
+        $this->set('logoutOnLogoutEnabled', class_exists('Concrete\Core\User\Event\Logout'));
         $this->set('urlResolver', $this->urlResolver);
+        $this->set('mappingsUrl', (string) $this->urlResolver->resolve(['/dashboard/system/registration/authentication/keycloak_mappings']));
     }
 
     /**
@@ -148,15 +151,13 @@ EOT
             throw new UserMessageException(t('Please specify at least one server.'));
         }
         $em->transactional(static function () use ($em, $servers) {
-            $allServers = $em->getRepository(Server::class)->findAll();
-            $deletedServers = array_udiff($allServers, $servers, static function (Server $a, Server $b) {
-                return $a === $b ? 0 : 1;
-            });
+            foreach ($em->getRepository(Server::class)->findAll() as $existingServer) {
+                if (!in_array($existingServer, $servers, true)) {
+                    $em->remove($existingServer);
+                }
+            }
             foreach ($servers as $server) {
                 $em->persist($server);
-            }
-            foreach ($deletedServers as $server) {
-                $em->remove($server);
             }
             $em->flush();
         });
@@ -280,7 +281,10 @@ EOT
     {
         $user = $this->app->make(User::class);
         if (!$user->isRegistered()) {
-            return new RedirectResponse(\URL::to('/login'), 302);
+            $rf = $this->app->make(ResponseFactoryInterface::class);
+            $um = $this->app->make(ResolverManagerInterface::class);
+
+            return $rf->redirect((string) $um->resolve(['/login']), 302);
         }
         if (!$this->config->get('keycloak_auth::options.enableDetach')) {
             throw new UserMessageException(t("You can't detach your account"));
@@ -343,6 +347,27 @@ EOT
     {
         if ($this->isValid()) {
             $extractor = $this->getExtractor();
+            try {
+                if ($extractor instanceof Extractor) {
+                    $service = $this->getService();
+                    if ($service instanceof Service) {
+                        $server = $service->getServer();
+                        if ($server !== null && $server->isLogNextReceivedClaims()) {
+                            $claims = $extractor->serializeClaims();
+                            if ($claims !== null) {
+                                $em = $this->app->make(EntityManagerInterface::class);
+                                $server
+                                    ->setLastLoggedReceivedClaims($claims)
+                                    ->setLogNextReceivedClaims(false)
+                                ;
+                                $em->flush();
+                            }
+                        }
+                    }
+                }
+            } catch (Exception $_) {
+            } catch (Throwable $_) {
+            }
             $userID = $this->getBoundUserID($extractor->getUniqueId());
             if ($userID && $userID > 0) {
                 $user = User::getByUserID($userID);
@@ -353,6 +378,22 @@ EOT
         }
 
         return parent::attemptAuthentication();
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \Concrete\Core\Authentication\Type\OAuth\GenericOauthTypeController::createUser()
+     */
+    protected function createUser()
+    {
+        /// @todo create it on my own
+        $result = parent::createUser();
+        if ($result instanceof User) {
+            $this->updateExistingUser($result, $this->getExtractor());
+        }
+
+        return $result;
     }
 
     private function setCommonData()
@@ -431,7 +472,10 @@ EOT
             ->setRegistrationEnabled(!empty($registrationEnabled))
             ->setRegistrationGroupID($registrationGroupID)
             ->setEmailRegexes(preg_split('/\s*[\r\n]+\s*/', trim($emailRegexes), -1, PREG_SPLIT_NO_EMPTY))
-            ->setLogoutOnLogout(class_exists(Logout::class) ? !empty($logoutOnLogout) : false)
+            ->setLogoutOnLogout(class_exists('Concrete\Core\User\Event\Logout') ? !empty($logoutOnLogout) : false)
+            ->setClaimMap(null)
+            ->setLogNextReceivedClaims(false)
+            ->setLastLoggedReceivedClaims(null)
         ;
 
         return $server;
@@ -492,6 +536,17 @@ EOT
         if ($extractor->supportsVerifiedEmail() && !$extractor->isEmailVerified()) {
             throw new UserMessageException(t('Please verify your email with this service before attempting to log in.'));
         }
+        if (!($extractor instanceof Extractor)) {
+            return;
+        }
+        $server = null;
+        $service = $this->getService();
+        if ($service instanceof Service) {
+            $server = $service->getServer();
+        }
+        if ($server === null) {
+            return;
+        }
         $email = null;
         $userInfo = null;
         if ($extractor->supportsEmail()) {
@@ -506,26 +561,15 @@ EOT
         } else {
             $userInfo = $this->userInfoRepository->getByID($userService->getUserID());
         }
-        $userEntity = $userInfo->getEntityObject();
-        if ($email) {
-            $userEntity->setUserEmail($email);
+        if ($userInfo === null) {
+            return;
         }
-        if ($extractor->supportsFirstName()) {
-            $firstName = $extractor->getFirstName();
-            if ($firstName) {
-                $key = \UserAttributeKey::getByHandle('first_name');
-                if ($key) {
-                    $userInfo->setAttribute($key, $firstName);
-                }
-            }
-        }
-        if ($extractor->supportsLastName()) {
-            $lastName = $extractor->getLastName();
-            if ($lastName) {
-                $key = \UserAttributeKey::getByHandle('last_name');
-                if ($key) {
-                    $userInfo->setAttribute($key, $lastName);
-                }
+        $map = $server->getClaimMap();
+        foreach ($map->getAttributeList() as $claimID => $attributes) {
+            $claimValue = $extractor->getClaimValue($claimID);
+            foreach ($attributes as $attribute) {
+                /** @var \\KeycloakAuth\Claim\Map\Attribute $attribute */
+                $attribute->mapValue($userInfo, $claimValue);
             }
         }
     }

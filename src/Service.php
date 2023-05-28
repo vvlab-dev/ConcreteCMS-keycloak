@@ -6,7 +6,6 @@ use KeycloakAuth\Entity\Server;
 use OAuth\Common\Http\Exception\TokenResponseException;
 use OAuth\Common\Http\Uri\Uri;
 use OAuth\OAuth2\Service\AbstractService;
-use OAuth\OAuth2\Token\StdOAuth2Token;
 use RuntimeException;
 
 class Service extends AbstractService
@@ -17,6 +16,8 @@ class Service extends AbstractService
      * @var string Scope for forcing OIDC
      */
     const SCOPE_OPENID = 'openid';
+
+    const SCOPE_PROFILE = 'profile';
 
     /**
      * @var string Scope for system info
@@ -151,19 +152,41 @@ class Service extends AbstractService
      */
     protected function parseAccessTokenResponse($responseBody)
     {
-        $body = json_decode($responseBody, true);
-
+        set_error_handler(static function () {}, -1);
+        try {
+            $body = json_decode($responseBody, true);
+        } finally {
+            restore_error_handler();
+        }
+        if (!is_array($body)) {
+            throw new TokenResponseException(t('Invalid JSON data'));
+        }
         if (isset($body['error'])) {
             throw new TokenResponseException($body['hint']);
         }
+        if (!isset($body['token_type']) || !is_string($body['token_type'])) {
+            throw new TokenResponseException(r('Missing field: %s', 'token_type'));
+        }
+        if (strcasecmp($body['token_type'], 'Bearer') !== 0) {
+            throw new TokenResponseException(t('Unsupported value of the %1$s field. Expected %2$s, received %3$s.', 'token_type', "'Bearer'", "'{$body['token_type']}'"));
+        }
+        unset($body['token_type']);
+        $token = new Token();
 
-        $token = new StdOAuth2Token();
         $token->setAccessToken($body['access_token']);
-        $token->setRefreshToken($body['refresh_token']);
-        $token->setLifetime($body['expires_in']);
-
-        // Store the id_token as an "extra param"
-        $token->setExtraParams(['id_token' => $body['id_token']]);
+        unset($body['access_token']);
+        if (isset($body['expires_in'])) {
+            $token->setLifetime($body['expires_in']);
+        }
+        unset($body['expires_in']);
+        if (isset($body['refresh_token'])) {
+            $token->setRefreshToken($body['refresh_token']);
+        }
+        unset($body['refresh_token']);
+        $token->setExtraParams($body);
+        if ($token->getIDToken() === '') {
+            throw new TokenResponseException(r('Missing field: %s', 'id_token'));
+        }
 
         return $token;
     }

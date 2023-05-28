@@ -80,7 +80,7 @@ class ServiceFactory
 
         $baseApiUrl = new Uri($server->getRealmRootUrl());
 
-        $service = $factory->createService('keycloak', $credentials, $storage, [Service::SCOPE_OPENID], $baseApiUrl);
+        $service = $factory->createService('keycloak', $credentials, $storage, [Service::SCOPE_OPENID, Service::SCOPE_PROFILE], $baseApiUrl);
         $service->setServer($server);
 
         return $service;

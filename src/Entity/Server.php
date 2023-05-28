@@ -3,6 +3,7 @@
 namespace KeycloakAuth\Entity;
 
 use JsonException;
+use KeycloakAuth\Claim\Map;
 
 defined('C5_EXECUTE') or die('Access Denied.');
 
@@ -106,6 +107,33 @@ class Server
      * @var bool
      */
     protected $logoutOnLogout;
+
+    /**
+     * The claim map to be used (in JSON format).
+     *
+     * @Doctrine\ORM\Mapping\Column(type="text", nullable=false, options={"comment": "Claim map to be used (in JSON format)"})
+     *
+     * @var string
+     */
+    protected $claimMap;
+
+    /**
+     * Should the next received claims be logged?
+     *
+     * @Doctrine\ORM\Mapping\Column(type="boolean", nullable=false, options={"comment": "Should the next received claims be logged?"})
+     *
+     * @var bool
+     */
+    protected $logNextReceivedClaims;
+
+    /**
+     * The last logged received claims (in JSON format).
+     *
+     * @Doctrine\ORM\Mapping\Column(type="text", nullable=false, options={"comment": "Last logged received claims (in JSON format)"})
+     *
+     * @var string
+     */
+    protected $lastLoggedReceivedClaims;
 
     public function __construct()
     {
@@ -350,6 +378,83 @@ class Server
     public function setLogoutOnLogout($value)
     {
         $this->logoutOnLogout = $value;
+
+        return $this;
+    }
+
+    /**
+     * Get the claim map to be used.
+     *
+     * @return \KeycloakAuth\Claim\Map
+     */
+    public function getClaimMap()
+    {
+        return Map::unserialize($this->claimMap) ?: Map::createDefaultMap();
+    }
+
+    /**
+     * Set the claim map to be used.
+     *
+     * @return $this
+     */
+    public function setClaimMap(Map $value = null)
+    {
+        $this->claimMap = $value === null ? '' : $value->serialize(false);
+
+        return $this;
+    }
+
+    /**
+     * Should the next received claims be logged?
+     *
+     * @return bool
+     */
+    public function isLogNextReceivedClaims()
+    {
+        return $this->logNextReceivedClaims;
+    }
+
+    /**
+     * Should the next received claims be logged?
+     *
+     * @param bool $value
+     *
+     * @return $this
+     */
+    public function setLogNextReceivedClaims($value)
+    {
+        $this->logNextReceivedClaims = $value;
+
+        return $this;
+    }
+
+    /**
+     * Get the OpenID configuration.
+     *
+     * @return array|null
+     */
+    public function getLastLoggedReceivedClaims()
+    {
+        if (empty($this->lastLoggedReceivedClaims)) {
+            return null;
+        }
+        try {
+            $arr = json_decode($this->lastLoggedReceivedClaims, true, 512, defined('JSON_THROW_ON_ERROR') ? JSON_THROW_ON_ERROR : 0);
+        } catch (JsonException $_) {
+            return null;
+        }
+
+        return is_array($arr) ? $arr : null;
+    }
+
+    /**
+     * Set the OpenID configuration.
+     *
+     * @return $this
+     */
+    public function setLastLoggedReceivedClaims(array $value = null)
+    {
+        $this->lastLoggedReceivedClaims = $value === null ? '' : json_encode($value, JSON_UNESCAPED_LINE_TERMINATORS | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
 
         return $this;
     }

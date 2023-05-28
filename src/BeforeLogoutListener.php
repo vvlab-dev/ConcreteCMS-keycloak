@@ -60,20 +60,20 @@ class BeforeLogoutListener
             return;
         }
         $serverInfo = $server->getOpenIDConfiguration();
-        $endSessionEndpoint = $serverInfo['end_session_endpoint'] ?? null;
+        $endSessionEndpoint = isset($serverInfo['end_session_endpoint']) ? $serverInfo['end_session_endpoint'] : null;
         if (empty($endSessionEndpoint)) {
             return;
         }
         $token = $service->getLastStoredAccessToken();
-        if ($token === null) {
+        if (!($token instanceof Token)) {
             return;
         }
-        $tokenExtraParams = $token->getExtraParams();
-        if (empty($tokenExtraParams['id_token'])) {
+        $idToken = $token->getIDToken();
+        if ($idToken === '') {
             return;
         }
         $url = $endSessionEndpoint;
-        $url .= (strpos($url, '?') === false ? '?' : '&') . 'id_token_hint=' . rawurlencode($tokenExtraParams['id_token']) . '&post_logout_redirect_uri=' . rawurlencode((string) $this->urlResolver->resolve(['/']));
+        $url .= (strpos($url, '?') === false ? '?' : '&') . 'id_token_hint=' . rawurlencode($idToken) . '&post_logout_redirect_uri=' . rawurlencode((string) $this->urlResolver->resolve(['/']));
         $event->setResponse($this->responseFactory->redirect($url, Response::HTTP_FOUND));
     }
 

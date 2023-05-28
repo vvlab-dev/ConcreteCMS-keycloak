@@ -2,148 +2,477 @@
 
 namespace KeycloakAuth;
 
+use KeycloakAuth\Claim\Map;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Lcobucci\JWT\Parser;
 use Lcobucci\JWT\Token\Parser as TokenParser;
-use OAuth\OAuth2\Token\StdOAuth2Token;
-use OAuth\UserData\Extractor\LazyExtractor;
+use OAuth\Common\Exception\Exception as OAuthException;
+use OAuth\Common\Storage\Exception\TokenNotFoundException;
+use OAuth\UserData\Extractor\ExtractorInterface;
 
-class Extractor extends LazyExtractor
+class Extractor implements ExtractorInterface
 {
-    const USER_PATH = '/ccm/api/1.0/account';
-
+    /**
+     * @var \KeycloakAuth\Service|\OAuth\Common\Service\ServiceInterface|null NULL only in constructor
+     */
     protected $service;
 
-    public function __construct()
-    {
-        parent::__construct(
-            $this->getDefaultLoadersMap(),
-            $this->getNormalizersMap(),
-            $this->getSupports()
-        );
-    }
+    /**
+     * @var array|null
+     */
+    private $claims;
 
-    public function getSupports()
-    {
-        return [
-            self::FIELD_EMAIL,
-            self::FIELD_UNIQUE_ID,
-            self::FIELD_USERNAME,
-            self::FIELD_FIRST_NAME,
-            self::FIELD_LAST_NAME,
-        ];
-    }
+    /**
+     * @var \KeycloakAuth\Claim\Map|null
+     */
+    private $map;
 
-    public function idNormalizer($data)
+    /**
+     * Called right after constructor.
+     *
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::setService()
+     */
+    public function setService($service)
     {
-        if (isset($data['claims'])) {
-            return $this->claim(array_get($data, 'claims.sub'));
-        }
-
-        return isset($data['id']) ? (int) $data['id'] : null;
-    }
-
-    public function emailNormalizer($data)
-    {
-        return $this->getNormalizedValue($data, 'email', 'email');
-    }
-
-    public function firstNameNormalizer($data)
-    {
-        return $this->getNormalizedValue($data, 'given_name', 'first_name');
-    }
-
-    public function lastNameNormalizer($data)
-    {
-        return $this->getNormalizedValue($data, 'family_name', 'last_name');
-    }
-
-    public function usernameNormalizer($data)
-    {
-        return $this->getNormalizedValue($data, 'preferred_username', 'username');
+        $this->service = $service;
     }
 
     /**
-     * Load the external Concrete profile, either from id_token or through the API.
+     * {@inheritdoc}
      *
-     * @throws \OAuth\Common\Exception\Exception
-     * @throws \OAuth\Common\Storage\Exception\TokenNotFoundException
-     * @throws \OAuth\Common\Token\Exception\ExpiredTokenException
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::supportsUniqueId()
+     */
+    public function supportsUniqueId()
+    {
+        return $this->getMap()->getClaimNameForField(static::FIELD_UNIQUE_ID) !== '';
+    }
+
+    /**
+     * {@inheritdoc}
      *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::getUniqueId()
+     */
+    public function getUniqueId()
+    {
+        return $this->getStringClaim($this->getMap()->getClaimNameForField(static::FIELD_UNIQUE_ID));
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::supportsUsername()
+     */
+    public function supportsUsername()
+    {
+        return $this->getMap()->getClaimNameForField(static::FIELD_USERNAME) !== '';
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::getUsername()
+     */
+    public function getUsername()
+    {
+        return $this->getStringClaim($this->getMap()->getClaimNameForField(static::FIELD_USERNAME));
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::supportsFirstName()
+     */
+    public function supportsFirstName()
+    {
+        return $this->getMap()->getClaimNameForField(static::FIELD_FIRST_NAME) !== '';
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::getFirstName()
+     */
+    public function getFirstName()
+    {
+        return $this->getStringClaim($this->getMap()->getClaimNameForField(static::FIELD_FIRST_NAME));
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::supportsLastName()
+     */
+    public function supportsLastName()
+    {
+        return $this->getMap()->getClaimNameForField(static::FIELD_LAST_NAME) !== '';
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::getLastName()
+     */
+    public function getLastName()
+    {
+        return $this->getStringClaim($this->getMap()->getClaimNameForField(static::FIELD_LAST_NAME));
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::supportsFullName()
+     */
+    public function supportsFullName()
+    {
+        return $this->getMap()->getClaimNameForField(static::FIELD_FULL_NAME) !== '';
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::getFullName()
+     */
+    public function getFullName()
+    {
+        return $this->getStringClaim($this->getMap()->getClaimNameForField(static::FIELD_FULL_NAME));
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::supportsEmail()
+     */
+    public function supportsEmail()
+    {
+        return $this->getMap()->getClaimNameForField(static::FIELD_EMAIL) !== '';
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::getEmail()
+     */
+    public function getEmail()
+    {
+        return $this->getStringClaim($this->getMap()->getClaimNameForField(static::FIELD_EMAIL));
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::supportsLocation()
+     */
+    public function supportsLocation()
+    {
+        return $this->getMap()->getClaimNameForField(static::FIELD_LOCATION) !== '';
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::getLocation()
+     */
+    public function getLocation()
+    {
+        return $this->getStringClaim($this->getMap()->getClaimNameForField(static::FIELD_LOCATION));
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::supportsDescription()
+     */
+    public function supportsDescription()
+    {
+        return $this->getMap()->getClaimNameForField(static::FIELD_DESCRIPTION) !== '';
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::getDescription()
+     */
+    public function getDescription()
+    {
+        return $this->getStringClaim($this->getMap()->getClaimNameForField(static::FIELD_DESCRIPTION));
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::supportsImageUrl()
+     */
+    public function supportsImageUrl()
+    {
+        return $this->getMap()->getClaimNameForField(static::FIELD_IMAGE_URL) !== '';
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::getImageUrl()
+     */
+    public function getImageUrl()
+    {
+        return $this->getStringClaim($this->getMap()->getClaimNameForField(static::FIELD_IMAGE_URL));
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::supportsProfileUrl()
+     */
+    public function supportsProfileUrl()
+    {
+        return $this->getMap()->getClaimNameForField(static::FIELD_PROFILE_URL) !== '';
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::getProfileUrl()
+     */
+    public function getProfileUrl()
+    {
+        return $this->getStringClaim($this->getMap()->getClaimNameForField(static::FIELD_PROFILE_URL));
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::supportsWebsites()
+     */
+    public function supportsWebsites()
+    {
+        return $this->getMap()->getClaimNameForField(static::FIELD_WEBSITES) !== '';
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::getWebsites()
+     */
+    public function getWebsites()
+    {
+        return $this->getStringClaim($this->getMap()->getClaimNameForField(static::FIELD_WEBSITES));
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::supportsVerifiedEmail()
+     */
+    public function supportsVerifiedEmail()
+    {
+        return $this->getStringClaim($this->getMap()->getClaimNameForField(static::FIELD_VERIFIED_EMAIL));
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::isEmailVerified()
+     */
+    public function isEmailVerified()
+    {
+        return $this->getBooleanClaim($this->getMap()->getClaimNameForField(static::FIELD_VERIFIED_EMAIL));
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::supportsExtra()
+     */
+    public function supportsExtra()
+    {
+        return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::getExtras()
+     */
+    public function getExtras()
+    {
+        return [];
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \OAuth\UserData\Extractor\ExtractorInterface::getExtra()
+     */
+    public function getExtra($key)
+    {
+        return null;
+    }
+
+    /**
+     * @return array|null
+     */
+    public function serializeClaims()
+    {
+        $result = [];
+        foreach ($this->getClaims() as $key => $value) {
+            if ($value instanceof \JsonSerializable) {
+                $result[$key] = $value->jsonSerialize();
+            } else {
+                return null;
+            }
+        }
+
+        return $result;
+    }
+    
+    
+    /**
+     * @param string $claimName
+     * @param mixed $onNotFound
+     *
+     * @return mixed
+     */
+    public function getClaimValue($claimName, $onNotFound = null)
+    {
+        if ($claimName === '') {
+            return $onNotFound;
+        }
+        $claims = $this->getClaims();
+        if (!isset($claims[$claimName])) {
+            return $onNotFound;
+        }
+
+        return $claims[$claimName]->getValue();
+    }
+
+    /**
      * @return array
      */
-    public function profileLoader()
+    protected function getClaims()
     {
-        $idTokenString = null;
+        if ($this->claims === null) {
+            $claims = $this->decodeClaims();
+            $this->checkRequiredClaims($claims);
+            $this->claims = $claims;
+        }
+
+        return $this->claims;
+    }
+
+    /**
+     * @return array
+     */
+    protected function decodeClaims()
+    {
         $token = $this->service->getStorage()->retrieveAccessToken($this->service->service());
-        if ($token instanceof StdOAuth2Token) {
-            $idTokenString = array_get($token->getExtraParams(), 'id_token');
+        if (!($token instanceof Token)) {
+            throw new TokenNotFoundException(t('Failed to retrieve the access token.'));
         }
-
-        // If we don't have a proper ID token, let's just fetch the data from the API
-        if (!$idTokenString) {
-            return json_decode($this->service->request(self::USER_PATH), true)['data'];
-        }
-
         if (class_exists(TokenParser::class)) {
             $decoder = new TokenParser(new JoseEncoder());
-            $token = $decoder->parse($idTokenString);
+            $token = $decoder->parse($token->getIDToken());
             $claims = $token->claims()->all();
         } else {
             $decoder = new Parser();
-            $token = $decoder->parse($idTokenString);
+            $token = $decoder->parse($token->getIDToken());
             $claims = $token->getClaims();
         }
 
-        return [
-            'claims' => $claims,
-        ];
-    }
-
-    protected function getNormalizersMap()
-    {
-        return [
-            self::FIELD_EMAIL => 'email',
-            self::FIELD_FIRST_NAME => 'firstName',
-            self::FIELD_LAST_NAME => 'lastName',
-            self::FIELD_UNIQUE_ID => 'id',
-            self::FIELD_USERNAME => 'username',
-        ];
+        return $claims;
     }
 
     /**
-     * Convert a claim into its raw value.
+     * @see https://openid.net/specs/openid-connect-core-1_0.html#IDToken
+     */
+    protected function checkRequiredClaims(array $claims)
+    {
+        $map = $this->getMap();
+        $requiredClaims = [];
+        foreach ([
+            static::FIELD_UNIQUE_ID,
+        ] as $field) {
+            $claim = $map->getClaimNameForField($field);
+            if ($claim !== '') {
+                $requiredClaims[] = $claim;
+            }
+        }
+        $missingClaims = array_diff($requiredClaims, array_keys($claims));
+        if ($missingClaims !== []) {
+            throw new OAuthException(t('The data sent from the server is missing the following keys:') . "\n- " . implode("\n- ", $missingClaims));
+        }
+    }
+
+    /**
+     * @return \KeycloakAuth\Claim\Map
+     */
+    protected function getMap()
+    {
+        if ($this->map === null) {
+            $server = $this->service->getServer();
+            $this->map = $server === null ? Map::getDefaultMap() : $server->getClaimMap();
+        }
+
+        return $this->map;
+    }
+
+    /**
+     * @param string $claimName
      *
-     * @param \Lcobucci\JWT\Claim|string $claim
+     * @return bool
+     */
+    protected function hasClaim($claimName)
+    {
+        return array_key_exists($claimName, $this->getClaims());
+    }
+
+    /**
+     * @param string $claimName
+     * @param mixed $onNotFound
+     *
+     * @return \Lcobucci\JWT\Claim|null
+     */
+    protected function getClaim($claimName)
+    {
+        if ($claimName === '') {
+            return null;
+        }
+        $claims = $this->getClaims();
+
+        return isset($claims[$claimName]) ? $claims[$claimName] : null;
+    }
+
+    /**
+     * @param string $claimName
      *
      * @return string
      */
-    protected function claim($claim = null)
+    protected function getStringClaim($claimName)
     {
-        if (!$claim) {
-            return null;
+        $claim = $this->getClaim($claimName);
+        if ($claim === null) {
+            return '';
         }
+        $value = $claim->getValue();
 
-        if (is_string($claim)) {
-            return $claim;
-        }
-
-        return $claim->getValue();
+        return is_string($value) ? $value : '';
     }
 
     /**
-     * @param \ArrayAccess|array $data
-     * @param string $claimMember
-     * @param string $dataMember
+     * @param string $claimName
+     * @param bool|mixed $onNotFound
+     * @param bool|mixed $onInvalid
      *
-     * @return mixed|null
+     * @return bool|mixed
      */
-    protected function getNormalizedValue($data, $claimMember, $dataMember)
+    protected function getBooleanClaim($claimName, $onNotFound = false, $onInvalid = false)
     {
-        if (isset($data['claims'])) {
-            return $this->claim(array_get($data, 'claims.' . $claimMember));
+        $claim = $this->getClaim($claimName, $onNotFound);
+        if ($claim === $onNotFound) {
+            return '';
         }
+        $value = $claim->getValue();
 
-        return array_get($data, $dataMember, null);
+        return is_bool($value) ? $value : $onInvalid;
     }
 }

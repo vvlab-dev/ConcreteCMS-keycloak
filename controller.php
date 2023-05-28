@@ -5,7 +5,6 @@ namespace Concrete\Package\KeycloakAuth;
 use Concrete\Core\Authentication\AuthenticationType;
 use Concrete\Core\Database\EntityManager\Provider\ProviderAggregateInterface;
 use Concrete\Core\Database\EntityManager\Provider\StandardPackageProvider;
-use Concrete\Core\Events\EventDispatcher;
 use Concrete\Core\Package\Package;
 use Concrete\Core\User\Event\Logout;
 use KeycloakAuth\BeforeLogoutListener;
@@ -37,7 +36,7 @@ class Controller extends Package implements ProviderAggregateInterface
      *
      * @var string
      */
-    protected $pkgVersion = '0.0.1';
+    protected $pkgVersion = '0.1.0';
 
     /**
      * {@inheritdoc}
@@ -94,6 +93,18 @@ class Controller extends Package implements ProviderAggregateInterface
     {
         $package = parent::install();
         AuthenticationType::add('keycloak', tc('AuthenticationType', 'Authentication with Keycloak'), 0, $package);
+        $this->installContentFile('config/install.xml');
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \Concrete\Core\Package\Package::upgrade()
+     */
+    public function upgrade()
+    {
+        parent::upgrade();
+        $this->installContentFile('config/install.xml');
     }
 
     public function on_start()
@@ -104,7 +115,7 @@ class Controller extends Package implements ProviderAggregateInterface
 
     private function hookEvents()
     {
-        $dispatcher = $this->app->make(EventDispatcher::class);
+        $dispatcher = $this->app->make('director');
         if (method_exists($dispatcher, 'getEventDispatcher')) {
             $dispatcher = $dispatcher->getEventDispatcher();
         }

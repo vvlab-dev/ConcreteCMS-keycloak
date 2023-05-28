@@ -1,0 +1,11 @@
+<concrete5-cif version="1.0">
+    <singlepages>
+        <page package="keycloak_auth" name="Keycloak Mappings" description="" pagetype="" path="/dashboard/system/registration/authentication/keycloak_mappings">
+        </page>
+        <page package="keycloak_auth" name="Edit Keycloak Mappings" description="" pagetype="" path="/dashboard/system/registration/authentication/keycloak_mappings/edit">
+            <attributes>
+                <attributekey handle="exclude_nav"><value>1</value></attributekey>
+            </attributes>
+        </page>
+    </singlepages>
+</concrete5-cif>

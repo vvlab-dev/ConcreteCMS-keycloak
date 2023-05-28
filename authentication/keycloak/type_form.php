@@ -12,6 +12,7 @@ defined('C5_EXECUTE') or die('Access denied.');
  * @var bool $logoutOnLogoutEnabled
  * @var KeycloakAuth\UI $ui
  * @var Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface $urlResolver
+ * @var string $mappingsUrl
  */
 
 $monospaceAttr = ($ui->majorVersion >= 9 ? ['class' => 'font-monospace'] : ['style' => 'font-family: monospace;']) + [
@@ -24,6 +25,10 @@ $monospaceAttr = ($ui->majorVersion >= 9 ? ['class' => 'font-monospace'] : ['sty
 
         <div class="alert alert-info">
             <?= t('Set the "Redirect URI" to: %s', '<code>' . h($callbackUrl) . '</code>') ?>
+        </div>
+
+        <div class="alert alert-info">
+            <?= t('You can customize the attribute mappings <a href="%s">in this page</a>.', h($mappingsUrl)) ?>
         </div>
 
         <div class="<?= $ui->formGroup ?>">
