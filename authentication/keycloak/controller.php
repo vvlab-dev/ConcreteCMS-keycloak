@@ -110,6 +110,7 @@ EOT
         $this->set('groupSelector', $this->app->make(GroupSelector::class));
         $this->set('form', $this->app->make('helper/form'));
         $em = $this->app->make(EntityManagerInterface::class);
+        $this->set('enableAttach', $this->config->get('keycloak_auth::options.enableAttach') ? true : false);
         $this->set('enableDetach', $this->config->get('keycloak_auth::options.enableDetach') ? true : false);
         $this->set('callbackUrl', $this->getCallbackUrl());
         $list = $this->app->make(GroupList::class);
@@ -161,6 +162,7 @@ EOT
             }
             $em->flush();
         });
+        $this->config->save('keycloak_auth::options.enableAttach', !empty($args['enableAttach']));
         $this->config->save('keycloak_auth::options.enableDetach', !empty($args['enableDetach']));
         $this->authenticationType->setAuthenticationTypeName($passedName);
     }
@@ -200,7 +202,11 @@ EOT
     public function hook()
     {
         $this->setCommonData();
-        $this->set('attachUrl', (string) $this->urlResolver->resolve(['/ccm/system/authentication/oauth2/' . $this->getHandle() . '/attempt_attach']));
+        if ($this->config->get('keycloak_auth::options.enableAttach')) {
+            $this->set('attachUrl', (string) $this->urlResolver->resolve(['/ccm/system/authentication/oauth2/' . $this->getHandle() . '/attempt_attach']));
+        } else {
+            $this->set('attachUrl', '');
+        }
         $me = $this->app->make(User::class);
         $myInfo = $me->getUserInfoObject();
         $this->set('userEmail', $myInfo ? (string) $myInfo->getUserEmail() : '');
@@ -269,6 +275,20 @@ EOT
         }
 
         return $this->completeAuthentication($user);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \Concrete\Core\Authentication\Type\OAuth\OAuth2\GenericOauth2TypeController::handle_attach_callback()
+     */
+    public function handle_attach_callback()
+    {
+        if (!$this->config->get('keycloak_auth::options.enableAttach')) {
+            throw new UserMessageException(t("You can't attach your account"));
+        }
+
+        return parent::handle_attach_callback();
     }
 
     /**

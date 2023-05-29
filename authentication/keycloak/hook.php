@@ -9,6 +9,9 @@ defined('C5_EXECUTE') or die('Access denied.');
  * @var string $userEmail
  */
 
+if ($attachUrl === '') {
+    return;
+}
 ?>
 <div class="form-group">
     <span>

@@ -7,6 +7,7 @@ defined('C5_EXECUTE') or die('Access denied.');
  * @var Concrete\Core\Form\Service\Widget\GroupSelector $groupSelector
  * @var Concrete\Core\Form\Service\Form $form
  * @var string $callbackUrl
+ * @var bool $enableAttach
  * @var bool $enableDetach
  * @var KeycloakAuth\Entity\Server[] $servers
  * @var bool $logoutOnLogoutEnabled
@@ -38,9 +39,15 @@ $monospaceAttr = ($ui->majorVersion >= 9 ? ['class' => 'font-monospace'] : ['sty
 
         <div class="<?= $ui->formGroup ?>">
             <div class="checkbox">
+                <label for="enableAttach">
+                    <?= $form->checkbox('enableAttach', '1', $enableAttach) ?>
+                    <span><?= t('Enable attaching existing local users to remote accounts') ?></span>
+                </label>
+            </div>
+            <div class="checkbox">
                 <label for="enableDetach">
                     <?= $form->checkbox('enableDetach', '1', $enableDetach) ?>
-                    <span><?= t('Enable detaching Keycloak accounts from Concrete accounts') ?></span>
+                    <span><?= t('Enable detaching local users from remote accounts') ?></span>
                 </label>
             </div>
             <div class="checkbox">
