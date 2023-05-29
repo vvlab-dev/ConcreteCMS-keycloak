@@ -4,6 +4,7 @@ namespace Concrete\Package\KeycloakAuth\Controller\SinglePage\Dashboard\System\R
 
 use Concrete\Core\Error\ErrorList\ErrorList;
 use Concrete\Core\Error\UserMessageException;
+use Concrete\Core\Form\Service\Widget\GroupSelector;
 use Concrete\Core\Http\ResponseFactoryInterface;
 use Concrete\Core\Page\Controller\DashboardPageController;
 use Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface;
@@ -13,6 +14,7 @@ use KeycloakAuth\Claim\Map\Attribute\Factory;
 use KeycloakAuth\Claim\Map\Field;
 use KeycloakAuth\Claim\Standard;
 use KeycloakAuth\Entity\Server;
+use KeycloakAuth\UI;
 use Punic\Comparer;
 
 defined('C5_EXECUTE') or die('Access Denied.');
@@ -36,6 +38,8 @@ class Edit extends DashboardPageController
             return $this->buildRedirect('/dashboard/system/registration/authentication/keycloak_mappings');
         }
         $this->requireAsset('javascript', 'vue');
+        $this->set('ui', $this->app->make(UI::class));
+        $this->set('groupSelector', $this->app->make(GroupSelector::class));
         $this->set('server', $server);
         $urlResolver = $this->app->make(ResolverManagerInterface::class);
         if (count($em->getRepository(Server::class)->findBy([], [], 2)) > 1) {

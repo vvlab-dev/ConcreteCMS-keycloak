@@ -325,8 +325,7 @@ class Extractor implements ExtractorInterface
 
         return $result;
     }
-    
-    
+
     /**
      * @param string $claimName
      * @param mixed $onNotFound

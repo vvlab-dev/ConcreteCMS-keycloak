@@ -25,6 +25,11 @@ class Map implements JsonSerializable
     private $attributes = [];
 
     /**
+     * @var \KeycloakAuth\Claim\Map\Groups|null
+     */
+    private $groups;
+
+    /**
      * @param string $field
      * @param string|null $claimName set to NULL or an empty string to unmap the field
      *
@@ -97,6 +102,28 @@ class Map implements JsonSerializable
     }
 
     /**
+     * @return \KeycloakAuth\Claim\Map\Groups
+     */
+    public function getGroups()
+    {
+        if ($this->groups === null) {
+            $this->groups = new Map\Groups();
+        }
+
+        return $this->groups;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setGroups(Map\Groups $value)
+    {
+        $this->groups = $value;
+
+        return $this;
+    }
+
+    /**
      * @return \KeycloakAuth\Claim\Map
      */
     public static function createDefaultMap()
@@ -119,6 +146,7 @@ class Map implements JsonSerializable
      *
      * @see \JsonSerializable::jsonSerialize()
      */
+    #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
         $result = [];
@@ -135,6 +163,10 @@ class Map implements JsonSerializable
                     ];
                 }
             }
+        }
+        $groups = $this->getGroups();
+        if (!$groups->isEmpty()) {
+            $result['groups'] = $groups->jsonSerialize();
         }
 
         return $result;
@@ -276,6 +308,12 @@ class Map implements JsonSerializable
                 }
                 $alreadySeenAttributes[] = $attribute->getAttributeKeyHandle();
                 $result->addAttributeForClaim($info['claim'], $attribute);
+            }
+        }
+        if (isset($data['groups'])) {
+            $groups = Map\Groups::jsonUnserialize($data['groups'], $warnings);
+            if ($groups !== null) {
+                $result->setGroups($groups);
             }
         }
         $acceptable = true;

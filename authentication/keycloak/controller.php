@@ -14,6 +14,7 @@ use Concrete\Core\Http\ResponseFactoryInterface;
 use Concrete\Core\Package\PackageService;
 use Concrete\Core\Routing\RedirectResponse;
 use Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface;
+use Concrete\Core\User\Group\Group;
 use Concrete\Core\User\Group\GroupList;
 use Concrete\Core\User\User;
 use Concrete\Core\User\UserInfoRepository;
@@ -588,8 +589,37 @@ EOT
         foreach ($map->getAttributeList() as $claimID => $attributes) {
             $claimValue = $extractor->getClaimValue($claimID);
             foreach ($attributes as $attribute) {
-                /** @var \\KeycloakAuth\Claim\Map\Attribute $attribute */
+                /** @var \KeycloakAuth\Claim\Map\Attribute $attribute */
                 $attribute->mapValue($userInfo, $claimValue);
+            }
+        }
+        $groups = $map->getGroups();
+        if ($groups->getClaimName() !== '') {
+            $rules = $groups->getRules();
+            if ($rules !== []) {
+                $claimValue = $extractor->getClaimValue($groups->getClaimName());
+                if (is_string($claimValue)) {
+                    $claimValue = [$claimValue];
+                } elseif (!is_array($claimValue)) {
+                    $claimValue = [];
+                }
+                foreach ($rules as $rule) {
+                    if (in_array($rule->getRemoteGroupName(), $claimValue, true)) {
+                        if ($rule->isJoinIfPresent()) {
+                            $group = Group::getByID($rule->getLocalGroupID());
+                            if ($group && !$group->isError() && !$userService->inExactGroup($group)) {
+                                $userService->enterGroup($group);
+                            }
+                        }
+                    } else {
+                        if ($rule->isLeaveIfAbsent()) {
+                            $group = Group::getByID($rule->getLocalGroupID());
+                            if ($group && !$group->isError() && $userService->inExactGroup($group)) {
+                                $userService->exitGroup($group);
+                            }
+                        }
+                    }
+                }
             }
         }
     }
