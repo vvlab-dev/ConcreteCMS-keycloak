@@ -99,7 +99,7 @@ defined('C5_EXECUTE') or die('Access Denied.');
                                 v-bind:group-id="rule.localGroupID"
                                 choose-text="<?= tc('Group', 'None') ?>"
                                 v-bind:input-name="`registrationGroupID_${index}`"
-                                v-on:change="rule.localGroupID = parseInt($event?.gID) || null"
+                                v-on:change="rule.localGroupID = parseInt($event?.gID) || null; checkEmptyGroupsRule()"
                             ></concrete-group-input>
                             <?php
                         } else {
