@@ -7,8 +7,8 @@ use Concrete\Core\Database\EntityManager\Provider\ProviderAggregateInterface;
 use Concrete\Core\Database\EntityManager\Provider\StandardPackageProvider;
 use Concrete\Core\Package\Package;
 use Concrete\Core\User\Event\Logout;
-use KeycloakAuth\BeforeLogoutListener;
-use KeycloakAuth\ServiceProvider;
+use vvLab\KeycloakAuth\BeforeLogoutListener;
+use vvLab\KeycloakAuth\ServiceProvider;
 
 /**
  * The package controller.
@@ -45,7 +45,7 @@ class Controller extends Package implements ProviderAggregateInterface
      */
     public function getPackageName()
     {
-        return t('Keycloak Authentication');
+        return t('Authentication with Keycloak');
     }
 
     /**
@@ -55,7 +55,7 @@ class Controller extends Package implements ProviderAggregateInterface
      */
     public function getPackageDescription()
     {
-        return t('Let users access the website using a Keycloak server.');
+        return t('Let users access your website using Keycloak OpenID servers.');
     }
 
     /**
@@ -65,7 +65,7 @@ class Controller extends Package implements ProviderAggregateInterface
      */
     public function getPackageAutoloaderRegistries()
     {
-        return ['src' => 'KeycloakAuth'];
+        return class_exists(ServiceProvider::class) ? [] : ['src' => 'vvLab\\KeycloakAuth'];
     }
 
     /**
@@ -79,7 +79,7 @@ class Controller extends Package implements ProviderAggregateInterface
             $this->app,
             $this,
             [
-                'src/Entity' => 'KeycloakAuth\Entity',
+                'src/Entity' => 'vvLab\KeycloakAuth\Entity',
             ]
         );
     }

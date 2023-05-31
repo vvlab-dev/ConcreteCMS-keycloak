@@ -9,7 +9,7 @@ defined('C5_EXECUTE') or die('Access denied.');
  * @var bool $requireEmail
  * @var string $authUrl
  * @var Concrete\Core\User\User $user
- * @var KeycloakAuth\UI $ui
+ * @var vvLab\KeycloakAuth\UI $ui
  * @var Concrete\Core\Form\Service\Form $form
  */
 

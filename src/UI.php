@@ -1,6 +1,6 @@
 <?php
 
-namespace KeycloakAuth;
+namespace vvLab\KeycloakAuth;
 
 use Concrete\Core\Config\Repository\Repository;
 

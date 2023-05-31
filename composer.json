@@ -1,0 +1,19 @@
+{
+    "name": "vvlab/keycloak_auth",
+    "description": "Let users access your website using Keycloak OpenID servers.",
+    "type": "concrete5-package",
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "vvLab\\KeycloakAuth\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "vvLab",
+            "email": "info@vvlab.it"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {}
+}

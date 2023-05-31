@@ -1,6 +1,6 @@
 <?php
 
-namespace KeycloakAuth\Claim\Conversion\Converters;
+namespace vvLab\KeycloakAuth\Claim\Conversion\Converters;
 
 use Concrete\Core\Entity\Attribute\Key\UserKey;
 use Concrete\Core\Entity\Attribute\Value\Value\TextValue;
@@ -10,7 +10,7 @@ class Text extends MultilineText
     /**
      * {@inheritdoc}
      *
-     * @see \KeycloakAuth\Claim\Conversion\Converter::getSupportedAttributeTypes()
+     * @see \vvLab\KeycloakAuth\Claim\Conversion\Converter::getSupportedAttributeTypes()
      */
     public function getSupportedAttributeTypes()
     {
@@ -25,7 +25,7 @@ class Text extends MultilineText
     /**
      * {@inheritdoc}
      *
-     * @see \KeycloakAuth\Claim\Conversion\Converter::convertClaimValue()
+     * @see \vvLab\KeycloakAuth\Claim\Conversion\Converter::convertClaimValue()
      */
     public function convertClaimValue(UserKey $attributeKey, $claimValue)
     {

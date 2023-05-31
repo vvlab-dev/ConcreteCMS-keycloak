@@ -1,6 +1,6 @@
 <?php
 
-namespace KeycloakAuth\Claim\Map\Groups;
+namespace vvLab\KeycloakAuth\Claim\Map\Groups;
 
 use Concrete\Core\Error\ErrorList\ErrorList;
 use JsonSerializable;

@@ -1,6 +1,6 @@
 <?php
 
-namespace KeycloakAuth;
+namespace vvLab\KeycloakAuth;
 
 use Concrete\Core\Authentication\AuthenticationType;
 use Concrete\Core\Authentication\Type\OAuth\BindingService;
@@ -51,7 +51,7 @@ class BeforeLogoutListener
         $controller = $type->getController();
         /** @var \Concrete\Package\KeycloakAuth\Authentication\Keycloak\Controller $controller */
         $service = $controller->getService();
-        /** @var \KeycloakAuth\Service $service */
+        /** @var \vvLab\KeycloakAuth\Service $service */
         $server = $service->getServer();
         if ($server === null) {
             return;

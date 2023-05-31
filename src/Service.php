@@ -1,8 +1,8 @@
 <?php
 
-namespace KeycloakAuth;
+namespace vvLab\KeycloakAuth;
 
-use KeycloakAuth\Entity\Server;
+use vvLab\KeycloakAuth\Entity\Server;
 use OAuth\Common\Http\Exception\TokenResponseException;
 use OAuth\Common\Http\Uri\Uri;
 use OAuth\OAuth2\Service\AbstractService;
@@ -35,7 +35,7 @@ class Service extends AbstractService
     const SCOPE_ACCOUNT = 'account';
 
     /**
-     * @var \KeycloakAuth\Entity\Server|null
+     * @var \vvLab\KeycloakAuth\Entity\Server|null
      */
     private $server;
 
@@ -50,7 +50,7 @@ class Service extends AbstractService
     }
 
     /**
-     * @return \KeycloakAuth\Entity\Server|null
+     * @return \vvLab\KeycloakAuth\Entity\Server|null
      */
     public function getServer()
     {

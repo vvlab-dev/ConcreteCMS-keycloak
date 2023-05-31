@@ -20,11 +20,11 @@ use Concrete\Core\User\User;
 use Concrete\Core\User\UserInfoRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use KeycloakAuth\Entity\Server;
-use KeycloakAuth\Extractor;
-use KeycloakAuth\Service;
-use KeycloakAuth\ServiceFactory;
-use KeycloakAuth\UI;
+use vvLab\KeycloakAuth\Entity\Server;
+use vvLab\KeycloakAuth\Extractor;
+use vvLab\KeycloakAuth\Service;
+use vvLab\KeycloakAuth\ServiceFactory;
+use vvLab\KeycloakAuth\UI;
 use League\Url\Url;
 use OAuth\Common\Token\Exception\ExpiredTokenException;
 use OAuth\UserData\Extractor\ExtractorInterface;
@@ -33,7 +33,7 @@ use Throwable;
 class Controller extends GenericOauth2TypeController
 {
     /**
-     * @var \KeycloakAuth\ServiceFactory
+     * @var \vvLab\KeycloakAuth\ServiceFactory
      */
     protected $factory;
 
@@ -429,7 +429,7 @@ EOT
      * @param array|\Traversable $args
      * @param bool $fetchOpenIDConfiguration
      *
-     * @return \KeycloakAuth\Entity\Server[]
+     * @return \vvLab\KeycloakAuth\Entity\Server[]
      */
     private function buildServersFromArgs($args, EntityManagerInterface $em, $fetchOpenIDConfiguration)
     {
@@ -449,7 +449,7 @@ EOT
      * @param int $index
      * @param bool $fetchOpenIDConfiguration
      *
-     * @return \KeycloakAuth\Entity\Server|null
+     * @return \vvLab\KeycloakAuth\Entity\Server|null
      */
     private function buildServerFromArgs($args, $index, EntityManagerInterface $em, UI $ui, $fetchOpenIDConfiguration)
     {
@@ -589,7 +589,7 @@ EOT
         foreach ($map->getAttributeList() as $claimID => $attributes) {
             $claimValue = $extractor->getClaimValue($claimID);
             foreach ($attributes as $attribute) {
-                /** @var \KeycloakAuth\Claim\Map\Attribute $attribute */
+                /** @var \vvLab\KeycloakAuth\Claim\Map\Attribute $attribute */
                 $attribute->mapValue($userInfo, $claimValue);
             }
         }

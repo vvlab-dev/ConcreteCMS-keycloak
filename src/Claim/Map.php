@@ -1,17 +1,17 @@
 <?php
 
-namespace KeycloakAuth\Claim;
+namespace vvLab\KeycloakAuth\Claim;
 
 use Concrete\Core\Attribute\Category\UserCategory;
 use Concrete\Core\Error\ErrorList\ErrorList;
 use JsonSerializable;
-use KeycloakAuth\Claim\Map\Attribute;
-use KeycloakAuth\Extractor;
+use vvLab\KeycloakAuth\Claim\Map\Attribute;
+use vvLab\KeycloakAuth\Extractor;
 
 class Map implements JsonSerializable
 {
     /**
-     * Array keys are keys of the KeycloakAuth\Extractor::FIELD_... constants, array values are the claim names.
+     * Array keys are keys of the vvLab\KeycloakAuth\Extractor::FIELD_... constants, array values are the claim names.
      *
      * @var string[]
      */
@@ -20,12 +20,12 @@ class Map implements JsonSerializable
     /**
      * Array keys are the claim names, array values are the list mapped attributes.
      *
-     * @var \KeycloakAuth\Claim\Map\Attribute[][]
+     * @var \vvLab\KeycloakAuth\Claim\Map\Attribute[][]
      */
     private $attributes = [];
 
     /**
-     * @var \KeycloakAuth\Claim\Map\Groups|null
+     * @var \vvLab\KeycloakAuth\Claim\Map\Groups|null
      */
     private $groups;
 
@@ -49,7 +49,7 @@ class Map implements JsonSerializable
 
     /**
      * @param string $claimName
-     * @param \KeycloakAuth\Claim\Map\Attribute[] $attributes
+     * @param \vvLab\KeycloakAuth\Claim\Map\Attribute[] $attributes
      *
      * @return $this
      */
@@ -92,7 +92,7 @@ class Map implements JsonSerializable
     }
 
     /**
-     * @return \Generator|array keys are the claim names, values are arrays of \KeycloakAuth\Claim\Map\Attribute
+     * @return \Generator|array keys are the claim names, values are arrays of \vvLab\KeycloakAuth\Claim\Map\Attribute
      */
     public function getAttributeList()
     {
@@ -102,7 +102,7 @@ class Map implements JsonSerializable
     }
 
     /**
-     * @return \KeycloakAuth\Claim\Map\Groups
+     * @return \vvLab\KeycloakAuth\Claim\Map\Groups
      */
     public function getGroups()
     {
@@ -124,7 +124,7 @@ class Map implements JsonSerializable
     }
 
     /**
-     * @return \KeycloakAuth\Claim\Map
+     * @return \vvLab\KeycloakAuth\Claim\Map
      */
     public static function createDefaultMap()
     {
@@ -195,7 +195,7 @@ class Map implements JsonSerializable
      * @param string|array|mixed $data
      * @param \Concrete\Core\Error\ErrorList\ErrorList|null $warnings
      *
-     * @return \KeycloakAuth\Claim\Map|null NULL in case of errors
+     * @return \vvLab\KeycloakAuth\Claim\Map|null NULL in case of errors
      */
     public static function unserialize($data, ErrorList $warnings = null)
     {
@@ -223,7 +223,7 @@ class Map implements JsonSerializable
      * @param string $string
      * @param \Concrete\Core\Error\ErrorList\ErrorList|null $warnings
      *
-     * @return \KeycloakAuth\Claim\Map|null NULL in case
+     * @return \vvLab\KeycloakAuth\Claim\Map|null NULL in case
      */
     protected static function unserializeString($string, ErrorList $warnings = null)
     {

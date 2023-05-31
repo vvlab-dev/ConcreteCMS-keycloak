@@ -1,9 +1,9 @@
 <?php
 
-namespace KeycloakAuth\Entity;
+namespace vvLab\KeycloakAuth\Entity;
 
 use JsonException;
-use KeycloakAuth\Claim\Map;
+use vvLab\KeycloakAuth\Claim\Map;
 
 defined('C5_EXECUTE') or die('Access Denied.');
 
@@ -385,7 +385,7 @@ class Server
     /**
      * Get the claim map to be used.
      *
-     * @return \KeycloakAuth\Claim\Map
+     * @return \vvLab\KeycloakAuth\Claim\Map
      */
     public function getClaimMap()
     {

@@ -1,6 +1,6 @@
 <?php
 
-namespace KeycloakAuth\Claim\Conversion\Converters;
+namespace vvLab\KeycloakAuth\Claim\Conversion\Converters;
 
 use Closure;
 use Concrete\Core\Entity\Attribute\Key\UserKey;
@@ -8,8 +8,8 @@ use Concrete\Core\Entity\Attribute\Value\Value\AddressValue;
 use Concrete\Core\Localization\Localization;
 use Concrete\Core\Localization\Service\CountryList;
 use Concrete\Core\Localization\Service\StatesProvincesList;
-use KeycloakAuth\Claim\Conversion\Converter;
-use KeycloakAuth\Claim\Standard\Address as StandardAddressFields;
+use vvLab\KeycloakAuth\Claim\Conversion\Converter;
+use vvLab\KeycloakAuth\Claim\Standard\Address as StandardAddressFields;
 
 class Address implements Converter
 {
@@ -63,7 +63,7 @@ class Address implements Converter
     /**
      * {@inheritdoc}
      *
-     * @see \KeycloakAuth\Claim\Conversion\Converter::getSupportedAttributeTypes()
+     * @see \vvLab\KeycloakAuth\Claim\Conversion\Converter::getSupportedAttributeTypes()
      */
     public function getSupportedAttributeTypes()
     {
@@ -75,7 +75,7 @@ class Address implements Converter
     /**
      * {@inheritdoc}
      *
-     * @see \KeycloakAuth\Claim\Conversion\Converter::convertClaimValue()
+     * @see \vvLab\KeycloakAuth\Claim\Conversion\Converter::convertClaimValue()
      */
     public function convertClaimValue(UserKey $attributeKey, $claimValue)
     {

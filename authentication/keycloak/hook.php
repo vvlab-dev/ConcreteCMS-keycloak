@@ -10,6 +10,13 @@ defined('C5_EXECUTE') or die('Access denied.');
  */
 
 if ($attachUrl === '') {
+    ?>
+    <div class="form-group">
+        <span>
+            <?= t("Your account isn't associated to a %s account", h($name)) ?>
+        </span>
+    </div>
+    <?php
     return;
 }
 ?>

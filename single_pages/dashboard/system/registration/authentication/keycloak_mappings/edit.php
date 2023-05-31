@@ -8,10 +8,10 @@ defined('C5_EXECUTE') or die('Access Denied.');
  * @var Concrete\Core\Application\Service\UserInterface $interface
  * @var Concrete\Core\Validation\CSRF\Token $token
  * @var Concrete\Core\Page\View\PageView $view
- * @var KeycloakAuth\UI $ui
+ * @var vvLab\KeycloakAuth\UI $ui
  * @var Concrete\Core\Form\Service\Widget\GroupSelector $groupSelector
  * @var Concrete\Package\KeycloakAuth\Controller\SinglePage\Dashboard\System\Registration\Authentication\KeycloakMappings\Edit $controller
- * @var KeycloakAuth\Entity\Server $server
+ * @var vvLab\KeycloakAuth\Entity\Server $server
  * @var string $backTo
  * @var array $standardClaimsDictionary
  * @var array $fieldDictionary

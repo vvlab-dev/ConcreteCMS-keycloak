@@ -1,6 +1,6 @@
 <?php
 
-namespace KeycloakAuth\Claim\Conversion;
+namespace vvLab\KeycloakAuth\Claim\Conversion;
 
 use Concrete\Core\Entity\Attribute\Key\UserKey;
 

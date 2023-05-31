@@ -1,19 +1,19 @@
 <?php
 
-namespace KeycloakAuth\Claim\Conversion\Converters;
+namespace vvLab\KeycloakAuth\Claim\Conversion\Converters;
 
 use Concrete\Core\Editor\LinkAbstractor;
 use Concrete\Core\Entity\Attribute\Key\Settings\TextareaSettings;
 use Concrete\Core\Entity\Attribute\Key\UserKey;
 use Concrete\Core\Entity\Attribute\Value\Value\TextValue;
-use KeycloakAuth\Claim\Conversion\Converter;
+use vvLab\KeycloakAuth\Claim\Conversion\Converter;
 
 class MultilineText implements Converter
 {
     /**
      * {@inheritdoc}
      *
-     * @see \KeycloakAuth\Claim\Conversion\Converter::getSupportedAttributeTypes()
+     * @see \vvLab\KeycloakAuth\Claim\Conversion\Converter::getSupportedAttributeTypes()
      */
     public function getSupportedAttributeTypes()
     {
@@ -25,7 +25,7 @@ class MultilineText implements Converter
     /**
      * {@inheritdoc}
      *
-     * @see \KeycloakAuth\Claim\Conversion\Converter::convertClaimValue()
+     * @see \vvLab\KeycloakAuth\Claim\Conversion\Converter::convertClaimValue()
      */
     public function convertClaimValue(UserKey $attributeKey, $claimValue)
     {

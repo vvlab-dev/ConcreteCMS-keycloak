@@ -5,7 +5,7 @@ defined('C5_EXECUTE') or die('Access denied.');
  * @var string $name
  * @var bool $requireEmail
  * @var string $detachUrl empty string if detaching is disabled
- * @var KeycloakAuth\UI $ui
+ * @var vvLab\KeycloakAuth\UI $ui
  */
 
 ?>

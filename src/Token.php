@@ -1,6 +1,6 @@
 <?php
 
-namespace KeycloakAuth;
+namespace vvLab\KeycloakAuth;
 
 use OAuth\OAuth2\Token\StdOAuth2Token;
 

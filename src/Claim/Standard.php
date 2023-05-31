@@ -1,6 +1,6 @@
 <?php
 
-namespace KeycloakAuth\Claim;
+namespace vvLab\KeycloakAuth\Claim;
 
 use Punic\Comparer;
 use ReflectionClass;
@@ -237,9 +237,9 @@ class Standard
 
     /**
      * End-User's preferred postal address.
-     * The value of the address member is a JSON structure containing some or all of the members defined in the KeycloakAuth\Claim\Standard\Address class.
+     * The value of the address member is a JSON structure containing some or all of the members defined in the vvLab\KeycloakAuth\Claim\Standard\Address class.
      *
-     * @see \KeycloakAuth\Claim\Standard\Address
+     * @see \vvLab\KeycloakAuth\Claim\Standard\Address
      *
      * @var string
      */

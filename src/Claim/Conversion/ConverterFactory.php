@@ -1,6 +1,6 @@
 <?php
 
-namespace KeycloakAuth\Claim\Conversion;
+namespace vvLab\KeycloakAuth\Claim\Conversion;
 
 use Concrete\Core\Application\Application;
 use Illuminate\Filesystem\Filesystem;
@@ -19,7 +19,7 @@ class ConverterFactory
     protected $converterCreator;
 
     /**
-     * @var \KeycloakAuth\Claim\Conversion\Converter[]
+     * @var \vvLab\KeycloakAuth\Claim\Conversion\Converter[]
      */
     private $converters = [];
 
@@ -66,7 +66,7 @@ class ConverterFactory
     }
 
     /**
-     * @return \KeycloakAuth\Claim\Conversion\Converter[]
+     * @return \vvLab\KeycloakAuth\Claim\Conversion\Converter[]
      */
     public function getRegisteredConverters()
     {
@@ -76,7 +76,7 @@ class ConverterFactory
     /**
      * @param string $handle
      *
-     * @return \KeycloakAuth\Claim\Conversion\Converter[]
+     * @return \vvLab\KeycloakAuth\Claim\Conversion\Converter[]
      */
     public function getConvertersForAttributeType($handle)
     {

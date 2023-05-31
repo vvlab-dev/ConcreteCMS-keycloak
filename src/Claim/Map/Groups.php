@@ -1,6 +1,6 @@
 <?php
 
-namespace KeycloakAuth\Claim\Map;
+namespace vvLab\KeycloakAuth\Claim\Map;
 
 use Concrete\Core\Error\ErrorList\ErrorList;
 use JsonSerializable;
@@ -13,7 +13,7 @@ class Groups implements JsonSerializable
     private $claimName = '';
 
     /**
-     * @var \KeycloakAuth\Claim\Map\Groups\Rule
+     * @var \vvLab\KeycloakAuth\Claim\Map\Groups\Rule
      */
     private $rules = [];
 
@@ -46,7 +46,7 @@ class Groups implements JsonSerializable
     }
 
     /**
-     * @param \KeycloakAuth\Claim\Map\Groups\Rule[] $value
+     * @param \vvLab\KeycloakAuth\Claim\Map\Groups\Rule[] $value
      *
      * @return $this
      */
@@ -71,7 +71,7 @@ class Groups implements JsonSerializable
     }
 
     /**
-     * @return \KeycloakAuth\Claim\Map\Groups\Rule[]
+     * @return \vvLab\KeycloakAuth\Claim\Map\Groups\Rule[]
      */
     public function getRules()
     {

@@ -1,6 +1,6 @@
 <?php
 
-namespace KeycloakAuth\Claim\Standard;
+namespace vvLab\KeycloakAuth\Claim\Standard;
 
 /**
  * @see https://openid.net/specs/openid-connect-core-1_0.html#AddressClaim

@@ -1,17 +1,17 @@
 <?php
 
-namespace KeycloakAuth\Claim\Conversion\Converters;
+namespace vvLab\KeycloakAuth\Claim\Conversion\Converters;
 
 use Concrete\Core\Entity\Attribute\Key\UserKey;
 use Concrete\Core\Entity\Attribute\Value\Value\BooleanValue;
-use KeycloakAuth\Claim\Conversion\Converter;
+use vvLab\KeycloakAuth\Claim\Conversion\Converter;
 
 class Boolean implements Converter
 {
     /**
      * {@inheritdoc}
      *
-     * @see \KeycloakAuth\Claim\Conversion\Converter::getSupportedAttributeTypes()
+     * @see \vvLab\KeycloakAuth\Claim\Conversion\Converter::getSupportedAttributeTypes()
      */
     public function getSupportedAttributeTypes()
     {
@@ -23,7 +23,7 @@ class Boolean implements Converter
     /**
      * {@inheritdoc}
      *
-     * @see \KeycloakAuth\Claim\Conversion\Converter::convertClaimValue()
+     * @see \vvLab\KeycloakAuth\Claim\Conversion\Converter::convertClaimValue()
      */
     public function convertClaimValue(UserKey $attributeKey, $claimValue)
     {

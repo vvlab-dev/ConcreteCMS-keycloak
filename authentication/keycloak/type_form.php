@@ -9,9 +9,9 @@ defined('C5_EXECUTE') or die('Access denied.');
  * @var string $callbackUrl
  * @var bool $enableAttach
  * @var bool $enableDetach
- * @var KeycloakAuth\Entity\Server[] $servers
+ * @var vvLab\KeycloakAuth\Entity\Server[] $servers
  * @var bool $logoutOnLogoutEnabled
- * @var KeycloakAuth\UI $ui
+ * @var vvLab\KeycloakAuth\UI $ui
  * @var Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface $urlResolver
  * @var string $mappingsUrl
  */

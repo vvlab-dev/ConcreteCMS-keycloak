@@ -1,8 +1,8 @@
 <?php
 
-namespace KeycloakAuth;
+namespace vvLab\KeycloakAuth;
 
-use KeycloakAuth\Claim\Map;
+use vvLab\KeycloakAuth\Claim\Map;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Lcobucci\JWT\Parser;
 use Lcobucci\JWT\Token\Parser as TokenParser;
@@ -13,7 +13,7 @@ use OAuth\UserData\Extractor\ExtractorInterface;
 class Extractor implements ExtractorInterface
 {
     /**
-     * @var \KeycloakAuth\Service|\OAuth\Common\Service\ServiceInterface|null NULL only in constructor
+     * @var \vvLab\KeycloakAuth\Service|\OAuth\Common\Service\ServiceInterface|null NULL only in constructor
      */
     protected $service;
 
@@ -23,7 +23,7 @@ class Extractor implements ExtractorInterface
     private $claims;
 
     /**
-     * @var \KeycloakAuth\Claim\Map|null
+     * @var \vvLab\KeycloakAuth\Claim\Map|null
      */
     private $map;
 
@@ -403,7 +403,7 @@ class Extractor implements ExtractorInterface
     }
 
     /**
-     * @return \KeycloakAuth\Claim\Map
+     * @return \vvLab\KeycloakAuth\Claim\Map
      */
     protected function getMap()
     {

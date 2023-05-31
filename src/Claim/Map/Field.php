@@ -1,8 +1,8 @@
 <?php
 
-namespace KeycloakAuth\Claim\Map;
+namespace vvLab\KeycloakAuth\Claim\Map;
 
-use KeycloakAuth\Extractor;
+use vvLab\KeycloakAuth\Extractor;
 use Punic\Comparer;
 use ReflectionClass;
 

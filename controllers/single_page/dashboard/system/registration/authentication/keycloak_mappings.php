@@ -5,7 +5,7 @@ namespace Concrete\Package\KeycloakAuth\Controller\SinglePage\Dashboard\System\R
 use Concrete\Core\Page\Controller\DashboardPageController;
 use Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface;
 use Doctrine\ORM\EntityManagerInterface;
-use KeycloakAuth\Entity\Server;
+use vvLab\KeycloakAuth\Entity\Server;
 
 defined('C5_EXECUTE') or die('Access Denied.');
 

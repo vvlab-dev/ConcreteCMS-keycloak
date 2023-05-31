@@ -1,6 +1,6 @@
 <?php
 
-namespace KeycloakAuth;
+namespace vvLab\KeycloakAuth;
 
 use Concrete\Core\Application\Application;
 use Concrete\Core\Config\Repository\Repository;
@@ -9,7 +9,7 @@ use Concrete\Core\Http\Request;
 use Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface;
 use Concrete\Core\User\User;
 use Doctrine\ORM\EntityManagerInterface;
-use KeycloakAuth\Entity\Server;
+use vvLab\KeycloakAuth\Entity\Server;
 use OAuth\Common\Consumer\Credentials;
 use OAuth\Common\Http\Uri\Uri;
 use OAuth\Common\Storage\SymfonySession;
@@ -87,7 +87,7 @@ class ServiceFactory
     }
 
     /**
-     * @return \KeycloakAuth\Entity\Server
+     * @return \vvLab\KeycloakAuth\Entity\Server
      */
     private function getApplicableServer()
     {
@@ -119,10 +119,10 @@ class ServiceFactory
     }
 
     /**
-     * @param \KeycloakAuth\Entity\Server[] $servers
+     * @param \vvLab\KeycloakAuth\Entity\Server[] $servers
      * @param string $email
      *
-     * @return \KeycloakAuth\Entity\Server
+     * @return \vvLab\KeycloakAuth\Entity\Server
      */
     private function getApplicableServerForEmail(array $servers, $email)
     {
@@ -157,10 +157,10 @@ class ServiceFactory
     }
 
     /**
-     * @param \KeycloakAuth\Entity\Server[] $servers
+     * @param \vvLab\KeycloakAuth\Entity\Server[] $servers
      * @param int $id
      *
-     * @return \KeycloakAuth\Entity\Server
+     * @return \vvLab\KeycloakAuth\Entity\Server
      */
     private function getApplicableServerByID(array $servers, $id)
     {

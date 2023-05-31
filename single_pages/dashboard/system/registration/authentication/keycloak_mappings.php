@@ -11,7 +11,7 @@ defined('C5_EXECUTE') or die('Access Denied.');
  * @var Concrete\Package\KeycloakAuth\Controller\SinglePage\Dashboard\System\Registration\Authentication\KeycloakMappings $controller
  * @var string $authenticationTypesPageUrl
  * @var Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface $urlResolver
- * @var KeycloakAuth\Entity\Server[] $servers
+ * @var vvLab\KeycloakAuth\Entity\Server[] $servers
  */
 if ($servers === []) {
     ?>

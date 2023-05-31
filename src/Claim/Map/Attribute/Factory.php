@@ -1,10 +1,10 @@
 <?php
 
-namespace KeycloakAuth\Claim\Map\Attribute;
+namespace vvLab\KeycloakAuth\Claim\Map\Attribute;
 
 use Concrete\Core\Attribute\Category\UserCategory;
-use KeycloakAuth\Claim\Conversion\ConverterFactory;
-use KeycloakAuth\Claim\Map\Attribute;
+use vvLab\KeycloakAuth\Claim\Conversion\ConverterFactory;
+use vvLab\KeycloakAuth\Claim\Map\Attribute;
 
 class Factory
 {
@@ -14,12 +14,12 @@ class Factory
     protected $attributeCategory;
 
     /**
-     * @param \KeycloakAuth\Claim\Conversion\ConverterFactory
+     * @param \vvLab\KeycloakAuth\Claim\Conversion\ConverterFactory
      */
     protected $converterFactory;
 
     /**
-     * @var \KeycloakAuth\Claim\Map\Attribute[]|null
+     * @var \vvLab\KeycloakAuth\Claim\Map\Attribute[]|null
      */
     private $supportedAttributes;
 
@@ -32,7 +32,7 @@ class Factory
     /**
      * @param bool $forceRefresh
      *
-     * @return \KeycloakAuth\Claim\Map\Attribute[]
+     * @return \vvLab\KeycloakAuth\Claim\Map\Attribute[]
      */
     public function getSupportedAttributes($forceRefresh = false)
     {
@@ -54,7 +54,7 @@ class Factory
     /**
      * @param string $attributeKeyHandle
      *
-     * @return \KeycloakAuth\Claim\Map\Attribute|null
+     * @return \vvLab\KeycloakAuth\Claim\Map\Attribute|null
      */
     public function getSupportedAttributeByAttributeKeyHandle($attributeKeyHandle)
     {

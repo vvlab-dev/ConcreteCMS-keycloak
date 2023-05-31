@@ -1,9 +1,9 @@
 <?php
 
-namespace KeycloakAuth;
+namespace vvLab\KeycloakAuth;
 
 use Concrete\Core\Foundation\Service\Provider;
-use KeycloakAuth\Claim\Conversion\ConverterFactory;
+use vvLab\KeycloakAuth\Claim\Conversion\ConverterFactory;
 use OAuth\ServiceFactory;
 use OAuth\UserData\ExtractorFactory;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace KeycloakAuth\Claim\Map;
+namespace vvLab\KeycloakAuth\Claim\Map;
 
 use Concrete\Core\Entity\Attribute\Key\UserKey;
 use Concrete\Core\User\UserInfo;
@@ -13,12 +13,12 @@ class Attribute
     protected $attributeKey;
 
     /**
-     * @param \KeycloakAuth\Claim\Conversion\Converter[]
+     * @param \vvLab\KeycloakAuth\Claim\Conversion\Converter[]
      */
     protected $converters;
 
     /**
-     * @param \KeycloakAuth\Claim\Conversion\Converter[] $converters
+     * @param \vvLab\KeycloakAuth\Claim\Conversion\Converter[] $converters
      */
     public function __construct(UserKey $attributeKey, array $converters)
     {
