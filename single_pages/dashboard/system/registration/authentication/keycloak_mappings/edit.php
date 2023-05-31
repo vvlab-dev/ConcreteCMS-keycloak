@@ -41,7 +41,7 @@ defined('C5_EXECUTE') or die('Access Denied.');
                 <tr v-for="(attribute, index) in map.attributes">
                     <td>
                         <div class="input-group">
-                            <input type="text" class="form-control form-control-sm font-monospace" v-model.trim="attribute.claim" v-on:input="checkEmptyAttribute" v-bind:disabled="busy" spellcheck="false" />
+                            <input type="text" class="form-control form-control-sm font-monospace" v-model.trim="attribute.claim" v-on:input="checkEmptyAttribute" v-bind:readonly="busy" spellcheck="false" />
                             <span class="input-group-btn">
                                 <button type="button" class="btn btn-sm btn-secondary btn-default" v-on:click.prevent="pickClaim(attribute.claim, (id) =&gt; attribute.claim = id)" v-bind:disabled="busy">...</button>
                             </span>
@@ -69,7 +69,7 @@ defined('C5_EXECUTE') or die('Access Denied.');
             <label class="form-label" for="kc-groups-claim">
                 <?= t('Claim ID') ?>
             </label>
-            <input type="text" id="kc-groups-claim" class="form-control font-monospace" v-model.trim="map.groups.claimName" v-bind:disabled="busy" spellcheck="false" /> 
+            <input type="text" id="kc-groups-claim" class="form-control font-monospace" v-model.trim="map.groups.claimName" v-bind:readonly="busy" spellcheck="false" />
         </div>
         <table class="table table-hover table-condensed table-sm">
             <colgroup>
@@ -89,7 +89,7 @@ defined('C5_EXECUTE') or die('Access Denied.');
             <tbody>
                 <tr v-for="(rule, index) in map.groups.rules">
                     <td>
-                        <input type="text" class="form-control font-monospace" v-model.trim="rule.remoteGroupName" v-on:input="checkEmptyGroupsRule" v-bind:disabled="busy" spellcheck="false" />
+                        <input type="text" class="form-control font-monospace" v-model.trim="rule.remoteGroupName" v-on:input="checkEmptyGroupsRule" v-bind:readonly="busy" spellcheck="false" />
                     </td>
                     <td>
                         <?php
@@ -121,11 +121,11 @@ defined('C5_EXECUTE') or die('Access Denied.');
                     </td>
                     <td>
                         <label style="font-weight: normal">
-                            <input type="checkbox" v-model="rule.joinIfPresent" />
+                            <input type="checkbox" v-model="rule.joinIfPresent" v-bind:disabled="busy" />
                             <?= t('Join local group if remote group is present') ?>
                         </label><br />
                         <label style="font-weight: normal">
-                            <input type="checkbox" v-model="rule.leaveIfAbsent" />
+                            <input type="checkbox" v-model="rule.leaveIfAbsent" v-bind:disabled="busy" />
                             <?= t('Leave local group if remote group is absent') ?>
                         </label><br />
                     </td>
@@ -152,13 +152,13 @@ defined('C5_EXECUTE') or die('Access Denied.');
                     <td>{{ FIELDS[field] }}</td>
                     <td>
                         <div class="input-group">
-                            <input type="text" class="form-control form-control-sm font-monospace" v-model.trim="map.fields[field]" v-bind:disabled="busy" spellcheck="false" />
+                            <input type="text" class="form-control form-control-sm font-monospace" v-model.trim="map.fields[field]" v-bind:readonly="busy" spellcheck="false" />
                             <span class="input-group-btn">
                                 <button type="button" class="btn btn-sm btn-secondary btn-default" v-on:click.prevent="pickClaim(map.fields[field], (id) =&gt; map.fields[field] = id)" v-bind:disabled="busy">...</button>
                             </span>
                         </div>
                     </td>
-                    <td><div class="small text-muted">{{ STANDARD_CLAIMS[map.fields[field]] || '' }}</div></td>
+                    <td><div class="small text-muted" v-if="STANDARD_CLAIMS.hasOwnProperty(map.fields[field])">{{ STANDARD_CLAIMS[map.fields[field]] }}</div></td>
                 </tr>
             </tbody>
         </table>
@@ -192,14 +192,14 @@ defined('C5_EXECUTE') or die('Access Denied.');
                     <tr v-for="(value, name) in lastLoggedReceivedClaims">
                         <td>
                             <code>{{ name }}</code>
-                            <div class="small" v-if="STANDARD_CLAIMS.hasOwnProperty(name)">{{ STANDARD_CLAIMS[name] }}</div>
+                            <div class="small text-muted" v-if="STANDARD_CLAIMS.hasOwnProperty(name)">{{ STANDARD_CLAIMS[name] }}</div>
                         </td>
                         <td><code style="white-space: pre-wrap">{{ JSON.stringify(value, null, '   ') }}</code></td>
                     </tr>
                 </tbody>
             </table>
             <div class="float-end pull-right">
-                <button type="button" class="btn btn-sm btn-secondary btn-default" v-on:click.prevent="doLastLoggedReceivedClaimsOperation('clear')" v-bind:disabled="busy"><?= t('Clear') ?></button>
+                <button type="button" class="btn btn-sm btn-danger" v-on:click.prevent="doLastLoggedReceivedClaimsOperation('clear')" v-bind:disabled="busy"><?= t('Clear') ?></button>
             </div>
         </div>
     </fieldset>
