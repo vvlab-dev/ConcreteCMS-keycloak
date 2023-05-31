@@ -20,15 +20,15 @@ use Concrete\Core\User\User;
 use Concrete\Core\User\UserInfoRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use League\Url\Url;
+use OAuth\Common\Token\Exception\ExpiredTokenException;
+use OAuth\UserData\Extractor\ExtractorInterface;
+use Throwable;
 use vvLab\KeycloakAuth\Entity\Server;
 use vvLab\KeycloakAuth\Extractor;
 use vvLab\KeycloakAuth\Service;
 use vvLab\KeycloakAuth\ServiceFactory;
 use vvLab\KeycloakAuth\UI;
-use League\Url\Url;
-use OAuth\Common\Token\Exception\ExpiredTokenException;
-use OAuth\UserData\Extractor\ExtractorInterface;
-use Throwable;
 
 class Controller extends GenericOauth2TypeController
 {

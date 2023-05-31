@@ -2,9 +2,9 @@
 
 namespace vvLab\KeycloakAuth\Claim\Map;
 
-use vvLab\KeycloakAuth\Extractor;
 use Punic\Comparer;
 use ReflectionClass;
+use vvLab\KeycloakAuth\Extractor;
 
 class Field
 {

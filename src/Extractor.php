@@ -2,13 +2,13 @@
 
 namespace vvLab\KeycloakAuth;
 
-use vvLab\KeycloakAuth\Claim\Map;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Lcobucci\JWT\Parser;
 use Lcobucci\JWT\Token\Parser as TokenParser;
 use OAuth\Common\Exception\Exception as OAuthException;
 use OAuth\Common\Storage\Exception\TokenNotFoundException;
 use OAuth\UserData\Extractor\ExtractorInterface;
+use vvLab\KeycloakAuth\Claim\Map;
 
 class Extractor implements ExtractorInterface
 {

@@ -2,11 +2,11 @@
 
 namespace vvLab\KeycloakAuth;
 
-use vvLab\KeycloakAuth\Entity\Server;
 use OAuth\Common\Http\Exception\TokenResponseException;
 use OAuth\Common\Http\Uri\Uri;
 use OAuth\OAuth2\Service\AbstractService;
 use RuntimeException;
+use vvLab\KeycloakAuth\Entity\Server;
 
 class Service extends AbstractService
 {

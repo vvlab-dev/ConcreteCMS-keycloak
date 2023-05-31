@@ -9,13 +9,13 @@ use Concrete\Core\Http\ResponseFactoryInterface;
 use Concrete\Core\Page\Controller\DashboardPageController;
 use Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Punic\Comparer;
 use vvLab\KeycloakAuth\Claim\Map;
 use vvLab\KeycloakAuth\Claim\Map\Attribute\Factory;
 use vvLab\KeycloakAuth\Claim\Map\Field;
 use vvLab\KeycloakAuth\Claim\Standard;
 use vvLab\KeycloakAuth\Entity\Server;
 use vvLab\KeycloakAuth\UI;
-use Punic\Comparer;
 
 defined('C5_EXECUTE') or die('Access Denied.');
 

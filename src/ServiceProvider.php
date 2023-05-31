@@ -3,9 +3,9 @@
 namespace vvLab\KeycloakAuth;
 
 use Concrete\Core\Foundation\Service\Provider;
-use vvLab\KeycloakAuth\Claim\Conversion\ConverterFactory;
 use OAuth\ServiceFactory;
 use OAuth\UserData\ExtractorFactory;
+use vvLab\KeycloakAuth\Claim\Conversion\ConverterFactory;
 
 class ServiceProvider extends Provider
 {

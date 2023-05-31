@@ -9,13 +9,13 @@ use Concrete\Core\Http\Request;
 use Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface;
 use Concrete\Core\User\User;
 use Doctrine\ORM\EntityManagerInterface;
-use vvLab\KeycloakAuth\Entity\Server;
 use OAuth\Common\Consumer\Credentials;
 use OAuth\Common\Http\Uri\Uri;
 use OAuth\Common\Storage\SymfonySession;
 use OAuth\ServiceFactory as OAuthServiceFactory;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Session\Session;
+use vvLab\KeycloakAuth\Entity\Server;
 
 class ServiceFactory
 {
