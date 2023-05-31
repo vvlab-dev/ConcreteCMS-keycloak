@@ -22,7 +22,7 @@ class Controller extends Package implements ProviderAggregateInterface
      *
      * @see \Concrete\Core\Package\Package::$appVersionRequired
      */
-    protected $appVersionRequired = '8.5.0';
+    protected $appVersionRequired = '8.5.10';
 
     /**
      * The unique handle that identifies the package.
@@ -36,7 +36,7 @@ class Controller extends Package implements ProviderAggregateInterface
      *
      * @var string
      */
-    protected $pkgVersion = '0.2.0';
+    protected $pkgVersion = '0.3.0';
 
     /**
      * {@inheritdoc}
