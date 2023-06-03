@@ -2,6 +2,8 @@
 
 namespace vvLab\KeycloakAuth;
 
+use DateTime;
+use DateTimeInterface;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Lcobucci\JWT\Parser;
 use Lcobucci\JWT\Token\Parser as TokenParser;
@@ -316,10 +318,17 @@ class Extractor implements ExtractorInterface
     {
         $result = [];
         foreach ($this->getClaims() as $key => $value) {
-            if ($value instanceof \JsonSerializable) {
-                $result[$key] = $value->jsonSerialize();
+            if ($value instanceof DateTimeInterface) {
+                $result[$key] = $value->format(DateTime::ISO8601);
+            }
+            if (is_object($value)) {
+                if ($value instanceof \JsonSerializable) {
+                    $result[$key] = $value->jsonSerialize();
+                } else {
+                    return null;
+                }
             } else {
-                return null;
+                $result[$key] = $value;
             }
         }
 
@@ -341,8 +350,12 @@ class Extractor implements ExtractorInterface
         if (!isset($claims[$claimName])) {
             return $onNotFound;
         }
+        $claim = $claims[$claimName];
+        if ($claim instanceof DateTimeInterface) {
+            return $claim;
+        }
 
-        return $claims[$claimName]->getValue();
+        return is_object($claim) ? $claims[$claimName]->getValue() : $claim;
     }
 
     /**
@@ -422,14 +435,14 @@ class Extractor implements ExtractorInterface
      */
     protected function hasClaim($claimName)
     {
-        return array_key_exists($claimName, $this->getClaims());
+        return $claimName !== '' && array_key_exists($claimName, $this->getClaims());
     }
 
     /**
      * @param string $claimName
      * @param mixed $onNotFound
      *
-     * @return \Lcobucci\JWT\Claim|null
+     * @return \Lcobucci\JWT\Claim|mixed|null
      */
     protected function getClaim($claimName)
     {
@@ -448,11 +461,7 @@ class Extractor implements ExtractorInterface
      */
     protected function getStringClaim($claimName)
     {
-        $claim = $this->getClaim($claimName);
-        if ($claim === null) {
-            return '';
-        }
-        $value = $claim->getValue();
+        $value = $this->getClaimValue($claimName, '');
 
         return is_string($value) ? $value : '';
     }
@@ -466,11 +475,10 @@ class Extractor implements ExtractorInterface
      */
     protected function getBooleanClaim($claimName, $onNotFound = false, $onInvalid = false)
     {
-        $claim = $this->getClaim($claimName, $onNotFound);
-        if ($claim === $onNotFound) {
-            return '';
+        if (!$this->hasClaim($claimName)) {
+            return $onNotFound;
         }
-        $value = $claim->getValue();
+        $value = $this->getClaimValue($claimName, '');
 
         return is_bool($value) ? $value : $onInvalid;
     }
