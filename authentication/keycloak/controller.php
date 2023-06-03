@@ -23,6 +23,7 @@ use Exception;
 use League\Url\Url;
 use OAuth\Common\Token\Exception\ExpiredTokenException;
 use OAuth\UserData\Extractor\ExtractorInterface;
+use Symfony\Component\EventDispatcher\GenericEvent;
 use Throwable;
 use vvLab\KeycloakAuth\Entity\Server;
 use vvLab\KeycloakAuth\Extractor;
@@ -622,5 +623,8 @@ EOT
                 }
             }
         }
+        $event = new GenericEvent($userService);
+        $event->setArgument('userInfo', $userInfo);
+        $this->app->make('director')->dispatch('keycloak_user_ready', $event);
     }
 }
