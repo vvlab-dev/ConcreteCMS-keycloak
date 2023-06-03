@@ -320,8 +320,7 @@ class Extractor implements ExtractorInterface
         foreach ($this->getClaims() as $key => $value) {
             if ($value instanceof DateTimeInterface) {
                 $result[$key] = $value->format(DateTime::ISO8601);
-            }
-            if (is_object($value)) {
+            } elseif (is_object($value)) {
                 if ($value instanceof \JsonSerializable) {
                     $result[$key] = $value->jsonSerialize();
                 } else {
