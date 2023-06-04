@@ -625,6 +625,7 @@ EOT
         }
         $event = new GenericEvent($userService);
         $event->setArgument('userInfo', $userInfo);
+        $event->setArgument('server', $server);
         $this->app->make('director')->dispatch('keycloak_user_ready', $event);
     }
 }
