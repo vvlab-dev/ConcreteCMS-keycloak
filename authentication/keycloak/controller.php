@@ -594,6 +594,7 @@ EOT
                 $attribute->mapValue($userInfo, $claimValue);
             }
         }
+        $this->app->make('cache/request')->delete('attribute/value');
         $groups = $map->getGroups();
         if ($groups->getClaimName() !== '') {
             $rules = $groups->getRules();
