@@ -53,6 +53,7 @@ class Attribute
         }
         if ($value === null) {
             $user->clearAttribute($this->attributeKey);
+
             return false;
         }
         $user->setAttribute($this->attributeKey, $value);
