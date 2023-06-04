@@ -2,8 +2,8 @@
 
 namespace vvLab\KeycloakAuth;
 
-use DateTime;
 use DateTimeInterface;
+use JsonSerializable;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Lcobucci\JWT\Parser;
 use Lcobucci\JWT\Token\Parser as TokenParser;
@@ -319,9 +319,9 @@ class Extractor implements ExtractorInterface
         $result = [];
         foreach ($this->getClaims() as $key => $value) {
             if ($value instanceof DateTimeInterface) {
-                $result[$key] = $value->format(DateTime::ISO8601);
+                $result[$key] = $value->getTimestamp();
             } elseif (is_object($value)) {
-                if ($value instanceof \JsonSerializable) {
+                if ($value instanceof JsonSerializable) {
                     $result[$key] = $value->jsonSerialize();
                 } else {
                     return null;
@@ -351,7 +351,7 @@ class Extractor implements ExtractorInterface
         }
         $claim = $claims[$claimName];
         if ($claim instanceof DateTimeInterface) {
-            return $claim;
+            return $claim->getTimestamp();
         }
 
         return is_object($claim) ? $claims[$claimName]->getValue() : $claim;
