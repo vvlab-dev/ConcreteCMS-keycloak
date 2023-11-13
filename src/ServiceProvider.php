@@ -16,6 +16,7 @@ class ServiceProvider extends Provider
      */
     public function register()
     {
+        $this->app->bindIf(RealmProvider::class, RealmProvider\DefaultRealmProvider::class, true);
         $this->app->extend('oauth/factory/service', static function (ServiceFactory $factory) {
             return $factory->registerService('keycloak', Service::class);
         });

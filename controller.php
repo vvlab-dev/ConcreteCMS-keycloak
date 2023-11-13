@@ -6,7 +6,6 @@ use Concrete\Core\Authentication\AuthenticationType;
 use Concrete\Core\Database\EntityManager\Provider\ProviderAggregateInterface;
 use Concrete\Core\Database\EntityManager\Provider\StandardPackageProvider;
 use Concrete\Core\Package\Package;
-use Concrete\Core\User\Event\Logout;
 use vvLab\KeycloakAuth\BeforeLogoutListener;
 use vvLab\KeycloakAuth\ServiceProvider;
 
@@ -120,7 +119,7 @@ class Controller extends Package implements ProviderAggregateInterface
             $dispatcher = $dispatcher->getEventDispatcher();
         }
         $dispatcher->addListener('on_before_user_logout', function ($event) {
-            if ($event instanceof Logout) {
+            if (is_a($event, 'Concrete\\Core\\User\\Event\\Logout', true)) {
                 $listener = $this->app->make(BeforeLogoutListener::class);
                 $listener($event);
             }

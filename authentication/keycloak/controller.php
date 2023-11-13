@@ -27,6 +27,7 @@ use Symfony\Component\EventDispatcher\GenericEvent;
 use Throwable;
 use vvLab\KeycloakAuth\Entity\Server;
 use vvLab\KeycloakAuth\Extractor;
+use vvLab\KeycloakAuth\RealmProvider;
 use vvLab\KeycloakAuth\Service;
 use vvLab\KeycloakAuth\ServiceFactory;
 use vvLab\KeycloakAuth\UI;
@@ -58,8 +59,20 @@ class Controller extends GenericOauth2TypeController
      */
     protected $userInfoRepository;
 
-    public function __construct(AuthenticationType $type = null, ServiceFactory $factory, ResolverManagerInterface $urlResolver, Repository $config, PackageService $packageService, UserInfoRepository $userInfoRepository)
-    {
+    /**
+     * @var \vvLab\KeycloakAuth\RealmProvider
+     */
+    protected $realmProvider;
+
+    public function __construct(
+        AuthenticationType $type = null,
+        ServiceFactory $factory,
+        ResolverManagerInterface $urlResolver,
+        Repository $config,
+        PackageService $packageService,
+        UserInfoRepository $userInfoRepository,
+        RealmProvider $realmProvider
+    ) {
         parent::__construct($type);
         $this->request = Request::getInstance();
         $this->factory = $factory;
@@ -118,19 +131,24 @@ EOT
         $list = $this->app->make(GroupList::class);
         $this->set('groups', $list->getResults());
         $this->set('ui', $this->app->make(UI::class));
-        $servers = null;
-        if ($this->request->isPost()) {
-            try {
-                $servers = $this->buildServersFromArgs($this->request->request->all(), $em, false);
-            } catch (Exception $_) {
-            } catch (Throwable $_) {
+        if ($this->realmProvider instanceof RealmProvider\DefaultRealmProvider) {
+            $this->set('editServers', true);
+            $servers = null;
+            if ($this->request->isPost()) {
+                try {
+                    $servers = $this->buildServersFromArgs($this->request->request->all(), $em, false);
+                } catch (Exception $_) {
+                } catch (Throwable $_) {
+                }
             }
+            if ($servers === null) {
+                $repo = $em->getRepository(Server::class);
+                $servers = $repo->findBy([], ['sort' => 'ASC']);
+            }
+            $this->set('servers', $servers);
+        } else {
+            $this->set('editServers', false);
         }
-        if ($servers === null) {
-            $repo = $em->getRepository(Server::class);
-            $servers = $repo->findBy([], ['sort' => 'ASC']);
-        }
-        $this->set('servers', $servers);
         $this->set('logoutOnLogoutEnabled', class_exists('Concrete\Core\User\Event\Logout'));
         $this->set('urlResolver', $this->urlResolver);
         $this->set('mappingsUrl', (string) $this->urlResolver->resolve(['/dashboard/system/registration/authentication/keycloak_mappings']));
@@ -148,22 +166,24 @@ EOT
         if ($passedName === '') {
             throw new UserMessageException(t('Invalid display name'));
         }
-        $em = $this->app->make(EntityManagerInterface::class);
-        $servers = $this->buildServersFromArgs($args, $em, true);
-        if ($servers === []) {
-            throw new UserMessageException(t('Please specify at least one server.'));
-        }
-        $em->transactional(static function () use ($em, $servers) {
-            foreach ($em->getRepository(Server::class)->findAll() as $existingServer) {
-                if (!in_array($existingServer, $servers, true)) {
-                    $em->remove($existingServer);
+        if ($this->realmProvider instanceof RealmProvider\DefaultRealmProvider) {
+            $em = $this->app->make(EntityManagerInterface::class);
+            $servers = $this->buildServersFromArgs($args, $em, true);
+            if ($servers === []) {
+                throw new UserMessageException(t('Please specify at least one server.'));
+            }
+            $em->transactional(static function () use ($em, $servers) {
+                foreach ($em->getRepository(Server::class)->findAll() as $existingServer) {
+                    if (!in_array($existingServer, $servers, true)) {
+                        $em->remove($existingServer);
+                    }
                 }
-            }
-            foreach ($servers as $server) {
-                $em->persist($server);
-            }
-            $em->flush();
-        });
+                foreach ($servers as $server) {
+                    $em->persist($server);
+                }
+                $em->flush();
+            });
+        }
         $this->config->save('keycloak_auth::options.enableAttach', !empty($args['enableAttach']));
         $this->config->save('keycloak_auth::options.enableDetach', !empty($args['enableDetach']));
         $this->authenticationType->setAuthenticationTypeName($passedName);

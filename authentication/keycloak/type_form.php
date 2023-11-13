@@ -9,11 +9,14 @@ defined('C5_EXECUTE') or die('Access denied.');
  * @var string $callbackUrl
  * @var bool $enableAttach
  * @var bool $enableDetach
- * @var vvLab\KeycloakAuth\Entity\Server[] $servers
  * @var bool $logoutOnLogoutEnabled
  * @var vvLab\KeycloakAuth\UI $ui
  * @var Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface $urlResolver
  * @var string $mappingsUrl
+ * @var bool $editServers
+ *
+ * If $editServers is true:
+ * @var vvLab\KeycloakAuth\Entity\Server[] $servers
  */
 
 $monospaceAttr = ($ui->majorVersion >= 9 ? ['class' => 'font-monospace'] : ['style' => 'font-family: monospace;']) + [
@@ -50,7 +53,7 @@ $monospaceAttr = ($ui->majorVersion >= 9 ? ['class' => 'font-monospace'] : ['sty
                     <span><?= t('Enable detaching local users from remote accounts') ?></span>
                 </label>
             </div>
-            <div class="checkbox">
+            <div class="checkbox" v-if="servers !== null">
                 <label for="_multiServer" v-bind:class="{'text-muted': !canDisableMultiServer}">
                     <?= $form->checkbox('_multiServer', '1', false, ['v-model' => 'multiServerChecked', 'v-bind:disabled' => '!canDisableMultiServer']) ?>
                     <span><?= t('Enable support for multiple Keycloak servers') ?></span>
@@ -58,7 +61,10 @@ $monospaceAttr = ($ui->majorVersion >= 9 ? ['class' => 'font-monospace'] : ['sty
             </div>
         </div>
 
-        <table class="table table-bordered table-hover">
+        <div v-if="servers === null" class="alert alert-info">
+            <?= t('Servers are handled in another way') ?>
+        </div>
+        <table v-else class="table table-bordered table-hover">
             <tbody>
                 <tr v-for="(server, index) in servers"><td>
                     <input type="hidden" v-bind:name="`serverID_${index}`" v-bind:value="server.id || ''" />
@@ -269,25 +275,33 @@ function initialize(Vue, config)
         el: '#keycloakauth-config',
         data() {
             <?php
-            $serializedServers = [];
-            foreach ($servers as $server) {
-                $serializedServers[] = [
-                    'id' => $server->getID(),
-                    'realmRootUrl' => $server->getRealmRootUrl(),
-                    'clientID' => $server->getClientID(),
-                    'clientSecret' => $server->getClientSecret(),
-                    'registrationEnabled' => $server->isRegistrationEnabled(),
-                    'logoutOnLogout' => $server->isLogoutOnLogout(),
-                    'registrationGroupID' => $server->getRegistrationGroupID(),
-                    'emailRegexes' => implode("\n", $server->getEmailRegexes()),
-                    '_showPassword' => false,
-                ];
+            if ($editServers) {
+                $serializedServers = [];
+                foreach ($servers as $server) {
+                    $serializedServers[] = [
+                        'id' => $server->getID(),
+                        'realmRootUrl' => $server->getRealmRootUrl(),
+                        'clientID' => $server->getClientID(),
+                        'clientSecret' => $server->getClientSecret(),
+                        'registrationEnabled' => $server->isRegistrationEnabled(),
+                        'logoutOnLogout' => $server->isLogoutOnLogout(),
+                        'registrationGroupID' => $server->getRegistrationGroupID(),
+                        'emailRegexes' => implode("\n", $server->getEmailRegexes()),
+                        '_showPassword' => false,
+                    ];
+                }
+                ?>
+                const servers = <?= json_encode($serializedServers) ?>;
+                if (servers.length === 0) {
+                    servers.push(this.createNewServerData());
+                }
+                <?php
+            } else {
+                ?>
+                servers = null;
+                <?php
             }
             ?>
-            const servers = <?= json_encode($serializedServers) ?>;
-            if (servers.length === 0) {
-                servers.push(this.createNewServerData());
-            }
             return {
                 visible: <?= json_encode($ui->majorVersion >= 9 ? false : true) ?>,
                 multiServerChecked: servers.length !== 1 || servers[0].emailRegexes !== '',
