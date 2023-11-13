@@ -91,6 +91,7 @@ class Controller extends Package implements ProviderAggregateInterface
     public function install()
     {
         $package = parent::install();
+        $this->app->make(ServiceProvider::class)->register();
         AuthenticationType::add('keycloak', tc('AuthenticationType', 'Authentication with Keycloak'), 0, $package);
         $this->installContentFile('config/install.xml');
     }
