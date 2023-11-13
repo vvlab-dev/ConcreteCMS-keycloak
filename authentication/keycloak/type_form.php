@@ -298,13 +298,13 @@ function initialize(Vue, config)
                 <?php
             } else {
                 ?>
-                servers = null;
+                const servers = null;
                 <?php
             }
             ?>
             return {
                 visible: <?= json_encode($ui->majorVersion >= 9 ? false : true) ?>,
-                multiServerChecked: servers.length !== 1 || servers[0].emailRegexes !== '',
+                multiServerChecked: servers !== null && (servers.length !== 1 || servers[0].emailRegexes !== ''),
                 servers,
             };
         },
@@ -332,10 +332,10 @@ function initialize(Vue, config)
         },
         computed: {
             multiServer() {
-                return this.canDisableMultiServer ? this.multiServerChecked : true;
+                return this.servers === null ? false : this.canDisableMultiServer ? this.multiServerChecked : true;
             },
             canDisableMultiServer() {
-                return this.servers.length === 1 && this.servers[0].emailRegexes === '';
+                return this.servers !== null && this.servers.length === 1 && this.servers[0].emailRegexes === '';
             },
         },
         methods: {
@@ -363,17 +363,19 @@ function initialize(Vue, config)
             },
             checkForm() {
                 try {
-                    if (this.servers.length === 0) {
-                        throw <?= json_encode(t('Please specify at least one server.')) ?>;
-                    }
-                    this.servers.forEach((server, index) => {
-                        this.checkServer(server);
-                        if (this.splitRegexes(server.emailRegexes).length === 0) {
-                            if (index !== this.servers.length - 1) {
-                                throw <?= json_encode('Only the last server can have an empty list of regular expressions.') ?>;
-                            }
+                    if (this.servers !== null) {
+                        if (this.servers.length === 0) {
+                            throw <?= json_encode(t('Please specify at least one server.')) ?>;
                         }
-                    });
+                        this.servers.forEach((server, index) => {
+                            this.checkServer(server);
+                            if (this.splitRegexes(server.emailRegexes).length === 0) {
+                                if (index !== this.servers.length - 1) {
+                                    throw <?= json_encode('Only the last server can have an empty list of regular expressions.') ?>;
+                                }
+                            }
+                        });
+                    }
                 } catch (e) {
                     window.ConcreteAlert.error({message: e.message || e?.toString() || '?'});
                     return false;
