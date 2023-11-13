@@ -8,7 +8,6 @@ use Concrete\Core\Config\Repository\Repository;
 use Concrete\Core\Error\UserMessageException;
 use Concrete\Core\Form\Service\Form;
 use Concrete\Core\Form\Service\Widget\GroupSelector;
-use Concrete\Core\Http\Client\Client;
 use Concrete\Core\Http\Request;
 use Concrete\Core\Http\ResponseFactoryInterface;
 use Concrete\Core\Package\PackageService;
@@ -20,7 +19,6 @@ use Concrete\Core\User\User;
 use Concrete\Core\User\UserInfoRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use League\Url\Url;
 use OAuth\Common\Token\Exception\ExpiredTokenException;
 use OAuth\UserData\Extractor\ExtractorInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
@@ -31,6 +29,7 @@ use vvLab\KeycloakAuth\RealmProvider;
 use vvLab\KeycloakAuth\Service;
 use vvLab\KeycloakAuth\ServiceFactory;
 use vvLab\KeycloakAuth\UI;
+use vvLab\KeycloakAuth\OpenID\ConfigurationFetcher;
 
 class Controller extends GenericOauth2TypeController
 {
@@ -503,7 +502,7 @@ EOT
             $registrationGroupID = null;
         }
         if ($fetchOpenIDConfiguration) {
-            $openIDConfiguration = $this->fetchOpenIDConfiguration($realmRootUrl, $ui);
+            $openIDConfiguration = $this->app->make(ConfigurationFetcher::class)->fetchOpenIDConfiguration($realmRootUrl, $ui);
         }
         $server
             ->setSort($index)
@@ -521,48 +520,6 @@ EOT
         ;
 
         return $server;
-    }
-
-    /**
-     * @param string $realmRootUrl
-     *
-     * @return array
-     */
-    private function fetchOpenIDConfiguration($realmRootUrl, UI $ui)
-    {
-        try {
-            $url = Url::createFromUrl($realmRootUrl);
-        } catch (Exception $_) {
-            throw new UserMessageException(t('Please specify a valid root URL of the realm'));
-        } catch (Throwable $_) {
-            throw new UserMessageException(t('Please specify a valid root URL of the realm'));
-        }
-        if (!(string) $url->getScheme() || !(string) $url->getHost()) {
-            throw new UserMessageException(t('Please specify a valid root URL of the realm'));
-        }
-        try {
-            $path = rtrim($url->getPath(), '/') . '/.well-known/openid-configuration';
-            $url = $url->setPath($path);
-            $client = $this->app->make(Client::class);
-            if ($ui->majorVersion >= 9) {
-                $response = $client->get((string) $url);
-                $json = (string) $response->getBody();
-            } else {
-                $client->setUri((string) $url);
-                $response = $client->send();
-                $json = $response->getBody();
-            }
-            $openIDConfiguration = json_decode($json, true, 512, defined('JSON_THROW_ON_ERROR') ? JSON_THROW_ON_ERROR : 0);
-            if (!is_array($openIDConfiguration)) {
-                throw new UserMessageException(t('Invalid response from the Keycloak server'));
-            }
-        } catch (Exception $x) {
-            throw new UserMessageException(t('Error while inspecting the URL %s', (string) $url) . "\n" . $x->getMessage());
-        } catch (Throwable $x) {
-            throw new UserMessageException(t('Error while inspecting the URL %s', (string) $url) . "\n" . $x->getMessage());
-        }
-
-        return $openIDConfiguration;
     }
 
     /**
