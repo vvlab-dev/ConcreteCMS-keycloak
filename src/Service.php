@@ -6,7 +6,6 @@ use OAuth\Common\Http\Exception\TokenResponseException;
 use OAuth\Common\Http\Uri\Uri;
 use OAuth\OAuth2\Service\AbstractService;
 use RuntimeException;
-use vvLab\KeycloakAuth\Entity\Server;
 
 class Service extends AbstractService
 {
@@ -35,9 +34,9 @@ class Service extends AbstractService
     const SCOPE_ACCOUNT = 'account';
 
     /**
-     * @var \vvLab\KeycloakAuth\Entity\Server|null
+     * @var \vvLab\KeycloakAuth\ServerConfiguration|null
      */
-    private $server;
+    private $serverConfiguration;
 
     /**
      * {@inheritdoc}
@@ -50,19 +49,19 @@ class Service extends AbstractService
     }
 
     /**
-     * @return \vvLab\KeycloakAuth\Entity\Server|null
+     * @return \vvLab\KeycloakAuth\ServerConfiguration|null
      */
-    public function getServer()
+    public function getServerConfiguration()
     {
-        return $this->server;
+        return $this->serverConfiguration;
     }
 
     /**
      * @return $this
      */
-    public function setServer(Server $server)
+    public function setServerConfiguration(ServerConfiguration $value)
     {
-        $this->server = $server;
+        $this->serverConfiguration = $value;
 
         return $this;
     }
@@ -82,7 +81,12 @@ class Service extends AbstractService
      */
     public function getAuthorizationEndpoint()
     {
-        return $this->getUriFromConfig('authorization_endpoint');
+        $serverConfiguration = $this->getServerConfiguration();
+        if ($serverConfiguration === null) {
+            throw new RuntimeException('The Keycloak server configuration is not defined');
+        }
+
+        return new Uri($serverConfiguration->getAuthorizationEndpointUrl());
     }
 
     /**
@@ -92,7 +96,12 @@ class Service extends AbstractService
      */
     public function getAccessTokenEndpoint()
     {
-        return $this->getUriFromConfig('token_endpoint');
+        $serverConfiguration = $this->getServerConfiguration();
+        if ($serverConfiguration === null) {
+            throw new RuntimeException('The Keycloak server configuration is not defined');
+        }
+
+        return new Uri($serverConfiguration->getAccessTokenEndpointUrl());
     }
 
     /**
@@ -112,15 +121,17 @@ class Service extends AbstractService
      */
     public function generatePrefixedAuthorizationState($prefix)
     {
-        $server = $this->getServer();
-        if ($server === null) {
-            throw new RuntimeException('Keycloak server is not defined');
+        
+        $serverConfiguration = $this->getServerConfiguration();
+        if ($serverConfiguration === null) {
+            throw new RuntimeException(t('The Keycloak server configuration is not defined'));
         }
-        $key = 'keycloak-serverid-' . $server->getID();
+        $base64Handle = rtrim(base64_encode($serverConfiguration->getHandle()), '=');
+        $key = 'keycloak-serverconfiguration-' . $base64Handle;
         $token = app('token')->generate($key);
-        $result = $server->getID() . '-' . $token;
+        $result = $base64Handle . '-' . $token;
         $prefix = (string) $prefix;
-
+        
         return $prefix === '' ? $result : "{$prefix}:{$result}";
     }
 
@@ -199,25 +210,5 @@ class Service extends AbstractService
     protected function getAuthorizationMethod()
     {
         return self::AUTHORIZATION_METHOD_HEADER_BEARER;
-    }
-
-    /**
-     * @param string $endpointKey
-     *
-     * @return \OAuth\Common\Http\Uri\Uri
-     */
-    private function getUriFromConfig($endpointKey)
-    {
-        $server = $this->getServer();
-        if ($server === null) {
-            throw new RuntimeException('Keycloak server is not defined');
-        }
-        $config = $server->getOpenIDConfiguration();
-        $endpoint = isset($config[$endpointKey]) ? $config[$endpointKey] : null;
-        if (empty($endpoint)) {
-            throw new RuntimeException(sprintf('Keycloak server did not provide %s', $endpointKey));
-        }
-
-        return new Uri($endpoint);
     }
 }

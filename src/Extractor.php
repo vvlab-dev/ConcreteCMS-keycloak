@@ -420,8 +420,8 @@ class Extractor implements ExtractorInterface
     protected function getMap()
     {
         if ($this->map === null) {
-            $server = $this->service->getServer();
-            $this->map = $server === null ? Map::getDefaultMap() : $server->getClaimMap();
+            $serverConfiguration = $this->service->getServerConfiguration();
+            $this->map = $serverConfiguration === null ? Map::getDefaultMap() : $serverConfiguration->getClaimMap();
         }
 
         return $this->map;

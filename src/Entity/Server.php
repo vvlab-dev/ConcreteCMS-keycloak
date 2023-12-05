@@ -3,7 +3,10 @@
 namespace vvLab\KeycloakAuth\Entity;
 
 use JsonException;
+use OAuth\Common\Http\Uri\Uri;
+use RuntimeException;
 use vvLab\KeycloakAuth\Claim\Map;
+use vvLab\KeycloakAuth\ServerConfiguration;
 
 defined('C5_EXECUTE') or die('Access Denied.');
 
@@ -14,7 +17,7 @@ defined('C5_EXECUTE') or die('Access Denied.');
  *     options={"comment": "Keycloak servers to be used for authentication"}
  * )
  */
-class Server
+class Server implements ServerConfiguration
 {
     /**
      * The server ID (null if not persisted).
@@ -141,6 +144,16 @@ class Server
     }
 
     /**
+     * {@inheritdoc}
+     *
+     * @see \vvLab\KeycloakAuth\ServerConfiguration::getHandle()
+     */
+    public function getHandle()
+    {
+        return (string) $this->getID();
+    }
+
+    /**
      * Get the server ID (null if not persisted).
      *
      * @return int|null
@@ -175,9 +188,9 @@ class Server
     }
 
     /**
-     * Get the realm root URL.
+     * {@inheritdoc}
      *
-     * @return string
+     * @see \vvLab\KeycloakAuth\ServerConfiguration::getRealmRootUrl()
      */
     public function getRealmRootUrl()
     {
@@ -227,9 +240,9 @@ class Server
     }
 
     /**
-     * Get the client ID.
+     * {@inheritdoc}
      *
-     * @return string
+     * @see \vvLab\KeycloakAuth\ServerConfiguration::getClientID()
      */
     public function getClientID()
     {
@@ -251,9 +264,9 @@ class Server
     }
 
     /**
-     * Get the client secret.
+     * {@inheritdoc}
      *
-     * @return string
+     * @see \vvLab\KeycloakAuth\ServerConfiguration::getClientSecret()
      */
     public function getClientSecret()
     {
@@ -275,9 +288,9 @@ class Server
     }
 
     /**
-     * Is new users registration enabled?
+     * {@inheritdoc}
      *
-     * @return bool
+     * @see \vvLab\KeycloakAuth\ServerConfiguration::isRegistrationEnabled()
      */
     public function isRegistrationEnabled()
     {
@@ -299,9 +312,9 @@ class Server
     }
 
     /**
-     * Get the ID of the group to be assigned to new users.
+     * {@inheritdoc}
      *
-     * @return int|null
+     * @see \vvLab\KeycloakAuth\ServerConfiguration::getRegistrationGroupID()
      */
     public function getRegistrationGroupID()
     {
@@ -359,9 +372,9 @@ class Server
     }
 
     /**
-     * Logout from server too when logging out from Concrete?
+     * {@inheritdoc}
      *
-     * @return bool
+     * @see \vvLab\KeycloakAuth\ServerConfiguration::isLogoutOnLogout()
      */
     public function isLogoutOnLogout()
     {
@@ -383,9 +396,9 @@ class Server
     }
 
     /**
-     * Get the claim map to be used.
+     * {@inheritdoc}
      *
-     * @return \vvLab\KeycloakAuth\Claim\Map
+     * @see \vvLab\KeycloakAuth\ServerConfiguration::getClaimMap()
      */
     public function getClaimMap()
     {
@@ -457,5 +470,54 @@ class Server
         $this->lastLoggedReceivedClaims = $value === null ? '' : json_encode($value, JSON_UNESCAPED_LINE_TERMINATORS | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
 
         return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \vvLab\KeycloakAuth\ServerConfiguration::getAuthorizationEndpointUrl()
+     */
+    public function getAuthorizationEndpointUrl()
+    {
+        return $this->getUrlFromConfig('authorization_endpoint', true);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \vvLab\KeycloakAuth\ServerConfiguration::getAccessTokenEndpointUrl()
+     */
+    public function getAccessTokenEndpointUrl()
+    {
+        return $this->getUrlFromConfig('token_endpoint', true);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \vvLab\KeycloakAuth\ServerConfiguration::getEndSessionEndpointUrl()
+     */
+    public function getEndSessionEndpointUrl()
+    {
+        return $this->getUrlFromConfig('end_session_endpoint', false);
+    }
+
+    /**
+     * @param string $endpointKey
+     *
+     * @return string
+     */
+    private function getUrlFromConfig($endpointKey, $required)
+    {
+        $openIDConfiguration =  $this->getOpenIDConfiguration();
+        $endpoint = isset($openIDConfiguration[$endpointKey]) ? $openIDConfiguration[$endpointKey] : null;
+        if (empty($endpoint) || !is_string($endpoint)) {
+            if ($required) {
+                throw new RuntimeException(t('The keycloak server did not provide %s', $endpointKey));
+            }
+            return '';
+        }
+
+        return $endpoint;
     }
 }

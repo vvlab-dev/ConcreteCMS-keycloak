@@ -52,16 +52,15 @@ class BeforeLogoutListener
         /** @var \Concrete\Package\KeycloakAuth\Authentication\Keycloak\Controller $controller */
         $service = $controller->getService();
         /** @var \vvLab\KeycloakAuth\Service $service */
-        $server = $service->getServer();
-        if ($server === null) {
+        $serverConfiguration = $service->getServerConfiguration();
+        if ($serverConfiguration === null) {
             return;
         }
-        if (!$server->isLogoutOnLogout()) {
+        if (!$serverConfiguration->isLogoutOnLogout()) {
             return;
         }
-        $serverInfo = $server->getOpenIDConfiguration();
-        $endSessionEndpoint = isset($serverInfo['end_session_endpoint']) ? $serverInfo['end_session_endpoint'] : null;
-        if (empty($endSessionEndpoint)) {
+        $endSessionEndpoint = $serverConfiguration->getEndSessionEndpointUrl();
+        if ($endSessionEndpoint === '') {
             return;
         }
         $token = $service->getLastStoredAccessToken();

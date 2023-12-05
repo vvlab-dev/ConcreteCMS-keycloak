@@ -15,7 +15,6 @@ use OAuth\Common\Storage\SymfonySession;
 use OAuth\ServiceFactory as OAuthServiceFactory;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Session\Session;
-use vvLab\KeycloakAuth\Entity\Server;
 
 class ServiceFactory
 {
@@ -49,7 +48,12 @@ class ServiceFactory
      */
     protected $currentUserMaker;
 
-    public function __construct(Repository $config, Session $session, ResolverManagerInterface $url, Request $request, EntityManagerInterface $em, Application $currentUserMaker)
+    /**
+     * @var \vvLab\KeycloakAuth\ServerConfigurationProvider
+     */
+    protected $serverConfigurationProvider;
+
+    public function __construct(Repository $config, Session $session, ResolverManagerInterface $url, Request $request, EntityManagerInterface $em, Application $currentUserMaker, ServerConfigurationProvider $serverConfigurationProvider)
     {
         $this->config = $config;
         $this->session = $session;
@@ -57,6 +61,7 @@ class ServiceFactory
         $this->urlResolver = $url;
         $this->em = $em;
         $this->currentUserMaker = $currentUserMaker;
+        $this->serverConfigurationProvider = $serverConfigurationProvider;
     }
 
     /**
@@ -66,7 +71,7 @@ class ServiceFactory
      */
     public function createService(OAuthServiceFactory $factory)
     {
-        $server = $this->getApplicableServer();
+        $serverConfiguration = $this->getApplicableServerConfiguration();
 
         $callbackUrl = $this->urlResolver->resolve(['/ccm/system/authentication/oauth2/keycloak/callback/']);
         if ($callbackUrl->getHost() == '') {
@@ -74,102 +79,52 @@ class ServiceFactory
             $callbackUrl = $callbackUrl->setScheme($this->request->getScheme());
         }
 
-        $credentials = new Credentials($server->getClientID(), $server->getClientSecret(), (string) $callbackUrl);
+        $credentials = new Credentials($serverConfiguration->getClientID(), $serverConfiguration->getClientSecret(), (string) $callbackUrl);
 
         $storage = new SymfonySession($this->session, false);
 
-        $baseApiUrl = new Uri($server->getRealmRootUrl());
+        $baseApiUrl = new Uri($serverConfiguration->getRealmRootUrl());
 
         $service = $factory->createService('keycloak', $credentials, $storage, [Service::SCOPE_OPENID, Service::SCOPE_PROFILE], $baseApiUrl);
-        $service->setServer($server);
+        $service->setServerConfiguration($serverConfiguration);
 
         return $service;
     }
 
     /**
-     * @return \vvLab\KeycloakAuth\Entity\Server
+     * @return \vvLab\KeycloakAuth\ServerConfiguration
      */
-    private function getApplicableServer()
+    private function getApplicableServerConfiguration()
     {
-        $repo = $this->em->getRepository(Server::class);
-        $servers = $repo->findBy([], ['sort' => 'ASC']);
-        if ($servers === []) {
-            throw new UserMessageException(t('No keycloak server has been defined.'));
-        }
-        $firstServer = $servers[0];
-        if ($firstServer->getEmailRegexes() === []) {
-            return $firstServer;
-        }
         $email = $this->getPostedEmail();
         if ($email !== '') {
-            return $this->getApplicableServerForEmail($servers, $email);
+            $serverConfiguration = $this->serverConfigurationProvider->getServerConfigurationByEmail($email);
+            if ($serverConfiguration === null) {
+                throw new UserMessageException(t('No keycloak server/realm can handle the provided email address.'));
+            }
+            return $serverConfiguration;
         }
-        $id = $this->getSessionServerID();
-        if ($id !== null) {
-            return $this->getApplicableServerByID($servers, $id);
+
+        $handle = $this->getServerConfigurationHandleFromSession();
+        if ($handle !== '') {
+            $serverConfiguration = $this->serverConfigurationProvider->getServerConfigurationByHandle($handle);
+            if ($serverConfiguration === null) {
+                throw new UserMessageException(t('No keycloak server/realm found with the provided handle.'));
+            }
+            return $serverConfiguration;
         }
+
         $user = $this->currentUserMaker->make(User::class);
-        if ($user->isRegistered()) {
-            $userInfo = $user->getUserInfoObject();
-            if ($userInfo && !$userInfo->isError()) {
-                return $this->getApplicableServerForEmail($servers, $userInfo->getUserEmail());
+        $userInfo = $user->isRegistered() ? $user->getUserInfoObject() : null;
+        if ($userInfo && !$userInfo->isError()) {
+            $serverConfiguration = $this->serverConfigurationProvider->getServerConfigurationByEmail($userInfo->getUserEmail());
+            if ($serverConfiguration === null) {
+                throw new UserMessageException(t('No keycloak server/realm can handle the your email address.'));
             }
+            return $serverConfiguration;
         }
-        throw new RuntimeException('Unable to detect the user state');
-    }
 
-    /**
-     * @param \vvLab\KeycloakAuth\Entity\Server[] $servers
-     * @param string $email
-     *
-     * @return \vvLab\KeycloakAuth\Entity\Server
-     */
-    private function getApplicableServerForEmail(array $servers, $email)
-    {
-        foreach ($servers as $server) {
-            $regexes = $server->getEmailRegexes();
-            if ($regexes === []) {
-                return $server;
-            }
-            $err = '';
-            set_error_handler(static function ($errno, $errstr) use (&$err) {
-                $err = is_string($errstr) ? trim($errstr) : '';
-                if ($err === '') {
-                    $err = "Error {$errno}";
-                }
-            });
-            try {
-                foreach ($regexes as $regex) {
-                    $err = '';
-                    $match = preg_match('/' . preg_quote($regex, '/') . '/i', $email);
-                    if ($match === false) {
-                        throw new RuntimeException("Error in the following regular expression:\n{$regex}\nError detail: {$err}");
-                    }
-                    if ($match !== 0) {
-                        return $server;
-                    }
-                }
-            } finally {
-                restore_error_handler();
-            }
-        }
-        throw new UserMessageException(t('No keycloak server can handle the provided email address.'));
-    }
-
-    /**
-     * @param \vvLab\KeycloakAuth\Entity\Server[] $servers
-     * @param int $id
-     *
-     * @return \vvLab\KeycloakAuth\Entity\Server
-     */
-    private function getApplicableServerByID(array $servers, $id)
-    {
-        foreach ($servers as $server) {
-            if ($server->getID() == $id) {
-                return $server;
-            }
-        }
-        throw new UserMessageException(t('No keycloak server found with the provided ID.'));
+        throw new RuntimeException(t('Unable to detect the user state'));
     }
 
     /**
@@ -187,13 +142,13 @@ class ServiceFactory
     }
 
     /**
-     * @return int|null
+     * @return string
      */
-    private function getSessionServerID()
+    private function getServerConfigurationHandleFromSession()
     {
         $storage = new SymfonySession($this->session, false);
         if (!$storage->hasAuthorizationState(Service::SERVICE_ID)) {
-            return null;
+            return '';
         }
         $token = $storage->retrieveAuthorizationState(Service::SERVICE_ID);
         $chunks = explode('-', $token, 2);
@@ -204,15 +159,15 @@ class ServiceFactory
         if (preg_match('/\w+:(\d+)/', $chunks[0], $matches)) {
             $chunks[0] = $matches[1];
         }
-        $serverID = is_numeric($chunks[0]) ? (int) $chunks[0] : 0;
-        if ($serverID <= 0) {
+        $serverHandle = base64_decode($chunks[0], false);
+        if ($serverHandle === false || $serverHandle === '') {
             return null;
         }
-        $key = 'keycloak-serverid-' . $serverID;
+        $key = 'keycloak-serverconfiguration-' . $chunks[0];
         if (!app('token')->validate($key, $chunks[1])) {
             return null;
         }
-
-        return $serverID;
+        
+        return $serverHandle;
     }
 }

@@ -25,7 +25,7 @@ use Symfony\Component\EventDispatcher\GenericEvent;
 use Throwable;
 use vvLab\KeycloakAuth\Entity\Server;
 use vvLab\KeycloakAuth\Extractor;
-use vvLab\KeycloakAuth\RealmProvider;
+use vvLab\KeycloakAuth\ServerConfigurationProvider;
 use vvLab\KeycloakAuth\Service;
 use vvLab\KeycloakAuth\ServiceFactory;
 use vvLab\KeycloakAuth\UI;
@@ -59,9 +59,9 @@ class Controller extends GenericOauth2TypeController
     protected $userInfoRepository;
 
     /**
-     * @var \vvLab\KeycloakAuth\RealmProvider
+     * @var \vvLab\KeycloakAuth\ServerConfigurationProvider
      */
-    protected $realmProvider;
+    protected $serverConfigurationProvider;
 
     public function __construct(
         AuthenticationType $type = null,
@@ -70,7 +70,7 @@ class Controller extends GenericOauth2TypeController
         Repository $config,
         PackageService $packageService,
         UserInfoRepository $userInfoRepository,
-        RealmProvider $realmProvider
+        ServerConfigurationProvider $serverConfigurationProvider
     ) {
         parent::__construct($type);
         $this->request = Request::getInstance();
@@ -79,6 +79,7 @@ class Controller extends GenericOauth2TypeController
         $this->config = $config;
         $this->packageService = $packageService;
         $this->userInfoRepository = $userInfoRepository;
+        $this->serverConfigurationProvider = $serverConfigurationProvider;
     }
 
     /**
@@ -130,7 +131,7 @@ EOT
         $list = $this->app->make(GroupList::class);
         $this->set('groups', $list->getResults());
         $this->set('ui', $this->app->make(UI::class));
-        if ($this->realmProvider instanceof RealmProvider\DefaultRealmProvider) {
+        if ($this->serverConfigurationProvider instanceof ServerConfigurationProvider\ServerProvider) {
             $this->set('editServers', true);
             $servers = null;
             if ($this->request->isPost()) {
@@ -165,7 +166,7 @@ EOT
         if ($passedName === '') {
             throw new UserMessageException(t('Invalid display name'));
         }
-        if ($this->realmProvider instanceof RealmProvider\DefaultRealmProvider) {
+        if ($this->serverConfigurationProvider instanceof ServerConfigurationProvider\ServerProvider) {
             $em = $this->app->make(EntityManagerInterface::class);
             $servers = $this->buildServersFromArgs($args, $em, true);
             if ($servers === []) {
@@ -349,9 +350,9 @@ EOT
      */
     public function supportsRegistration()
     {
-        $server = $this->getService()->getServer();
+        $serverConfiguration = $this->getService()->getServerConfiguration();
 
-        return $server !== null && $server->isRegistrationEnabled();
+        return $serverConfiguration !== null && $serverConfiguration->isRegistrationEnabled();
     }
 
     /**
@@ -361,9 +362,9 @@ EOT
      */
     public function registrationGroupID()
     {
-        $server = $this->getService()->getServer();
+        $serverConfiguration = $this->getService()->getServerConfiguration();
 
-        return $server === null ? null : $server->getRegistrationGroupID();
+        return $serverConfiguration === null ? null : $serverConfiguration->getRegistrationGroupID();
     }
 
     /**
@@ -392,12 +393,12 @@ EOT
                 if ($extractor instanceof Extractor) {
                     $service = $this->getService();
                     if ($service instanceof Service) {
-                        $server = $service->getServer();
-                        if ($server !== null && $server->isLogNextReceivedClaims()) {
+                        $serverConfiguration = $service->getServerConfiguration();
+                        if ($serverConfiguration instanceof Server && $serverConfiguration->isLogNextReceivedClaims()) {
                             $claims = $extractor->serializeClaims();
                             if ($claims !== null) {
                                 $em = $this->app->make(EntityManagerInterface::class);
-                                $server
+                                $serverConfiguration
                                     ->setLastLoggedReceivedClaims($claims)
                                     ->setLogNextReceivedClaims(false)
                                 ;
@@ -440,9 +441,7 @@ EOT
     private function setCommonData()
     {
         $this->set('name', $this->getAuthenticationType()->getAuthenticationTypeDisplayName('text'));
-        $repo = $this->app->make(EntityManagerInterface::class)->getRepository(Server::class);
-        $firstServer = $repo->findOneBy([], ['sort' => 'ASC']);
-        $this->set('requireEmail', $firstServer !== null && $firstServer->getEmailRegexes() !== []);
+        $this->set('requireEmail', $this->serverConfigurationProvider->isEmailRequired());
     }
 
     /**
@@ -538,12 +537,12 @@ EOT
         if (!($extractor instanceof Extractor)) {
             return;
         }
-        $server = null;
+        $serverConfiguration = null;
         $service = $this->getService();
         if ($service instanceof Service) {
-            $server = $service->getServer();
+            $serverConfiguration = $service->getServerConfiguration();
         }
-        if ($server === null) {
+        if ($serverConfiguration === null) {
             return;
         }
         $email = null;
@@ -563,7 +562,7 @@ EOT
         if ($userInfo === null) {
             return;
         }
-        $map = $server->getClaimMap();
+        $map = $serverConfiguration->getClaimMap();
         foreach ($map->getAttributeList() as $claimID => $attributes) {
             $claimValue = $extractor->getClaimValue($claimID);
             foreach ($attributes as $attribute) {
@@ -603,7 +602,7 @@ EOT
         }
         $event = new GenericEvent($userService);
         $event->setArgument('userInfo', $userInfo);
-        $event->setArgument('server', $server);
+        $event->setArgument('serverConfiguration', $serverConfiguration);
         $this->app->make('director')->dispatch('keycloak_user_ready', $event);
     }
 }
