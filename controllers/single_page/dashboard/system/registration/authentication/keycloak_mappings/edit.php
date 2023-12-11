@@ -15,6 +15,7 @@ use vvLab\KeycloakAuth\Claim\Map\Attribute\Factory;
 use vvLab\KeycloakAuth\Claim\Map\Field;
 use vvLab\KeycloakAuth\Claim\Standard;
 use vvLab\KeycloakAuth\Entity\Server;
+use vvLab\KeycloakAuth\ServerConfigurationProvider;
 use vvLab\KeycloakAuth\UI;
 
 defined('C5_EXECUTE') or die('Access Denied.');
@@ -29,10 +30,12 @@ class Edit extends DashboardPageController
     public function view($serverID = '')
     {
         $server = null;
-        $serverID = is_numeric($serverID) ? (int) $serverID : 0;
-        if ($serverID > 0) {
-            $em = $this->app->make(EntityManagerInterface::class);
-            $server = $em->find(Server::class, $serverID);
+        if ($this->app->make(ServerConfigurationProvider::class) instanceof ServerConfigurationProvider\ServerProvider) {
+            $serverID = is_numeric($serverID) ? (int) $serverID : 0;
+            if ($serverID > 0) {
+                $em = $this->app->make(EntityManagerInterface::class);
+                $server = $em->find(Server::class, $serverID);
+            }
         }
         if ($server === null) {
             return $this->buildRedirect('/dashboard/system/registration/authentication/keycloak_mappings');
@@ -63,6 +66,9 @@ class Edit extends DashboardPageController
      */
     public function claimsLogOperation($serverID = '')
     {
+        if (!$this->app->make(ServerConfigurationProvider::class) instanceof ServerConfigurationProvider\ServerProvider) {
+            throw new UserMessageException(t('Servers are handled in another way'));
+        }
         if (!$this->token->validate("kc-mappings-logop{$serverID}")) {
             throw new UserMessageException($this->token->getErrorMessage());
         }
@@ -106,6 +112,9 @@ class Edit extends DashboardPageController
      */
     public function save($serverID = '')
     {
+        if (!$this->app->make(ServerConfigurationProvider::class) instanceof ServerConfigurationProvider\ServerProvider) {
+            throw new UserMessageException(t('Servers are handled in another way'));
+        }
         if (!$this->token->validate("kc-mappings-save{$serverID}")) {
             throw new UserMessageException($this->token->getErrorMessage());
         }

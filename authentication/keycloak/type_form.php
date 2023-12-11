@@ -27,12 +27,14 @@ $monospaceAttr = ($ui->majorVersion >= 9 ? ['class' => 'font-monospace'] : ['sty
 <div id="keycloakauth-config" v-cloak>
     <div v-if="visible">
 
-        <div class="alert alert-info">
-            <?= t('Set the "Redirect URI" to: %s', '<code>' . h($callbackUrl) . '</code>') ?>
-        </div>
+        <div v-if="servers !== null">
+            <div class="alert alert-info">
+                <?= t('Set the "Redirect URI" to: %s', '<code>' . h($callbackUrl) . '</code>') ?>
+            </div>
 
-        <div class="alert alert-info">
-            <?= t('You can customize the attribute mappings <a href="%s">in this page</a>.', h($mappingsUrl)) ?>
+            <div class="alert alert-info">
+                <?= t('You can customize the attribute mappings <a href="%s">in this page</a>.', h($mappingsUrl)) ?>
+            </div>
         </div>
 
         <div class="<?= $ui->formGroup ?>">
