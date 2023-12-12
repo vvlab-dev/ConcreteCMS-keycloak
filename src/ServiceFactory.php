@@ -96,6 +96,16 @@ class ServiceFactory
      */
     private function getApplicableServerConfiguration()
     {
+        $user = $this->currentUserMaker->make(User::class);
+        $userInfo = $user->isRegistered() ? $user->getUserInfoObject() : null;
+        if ($userInfo && !$userInfo->isError()) {
+            $serverConfiguration = $this->serverConfigurationProvider->getServerConfigurationByEmail($userInfo->getUserEmail());
+            if ($serverConfiguration === null) {
+                throw new UserMessageException(t('No keycloak server/realm can handle the your email address.'));
+            }
+            return $serverConfiguration;
+        }
+        
         $email = $this->getPostedEmail();
         if ($email !== '') {
             $serverConfiguration = $this->serverConfigurationProvider->getServerConfigurationByEmail($email);
@@ -110,16 +120,6 @@ class ServiceFactory
             $serverConfiguration = $this->serverConfigurationProvider->getServerConfigurationByHandle($handle);
             if ($serverConfiguration === null) {
                 throw new UserMessageException(t('No keycloak server/realm found with the provided handle.'));
-            }
-            return $serverConfiguration;
-        }
-
-        $user = $this->currentUserMaker->make(User::class);
-        $userInfo = $user->isRegistered() ? $user->getUserInfoObject() : null;
-        if ($userInfo && !$userInfo->isError()) {
-            $serverConfiguration = $this->serverConfigurationProvider->getServerConfigurationByEmail($userInfo->getUserEmail());
-            if ($serverConfiguration === null) {
-                throw new UserMessageException(t('No keycloak server/realm can handle the your email address.'));
             }
             return $serverConfiguration;
         }
@@ -150,22 +150,25 @@ class ServiceFactory
         if (!$storage->hasAuthorizationState(Service::SERVICE_ID)) {
             return '';
         }
-        $token = $storage->retrieveAuthorizationState(Service::SERVICE_ID);
-        $chunks = explode('-', $token, 2);
-        if (count($chunks) !== 2) {
-            return null;
+        $raw = $storage->retrieveAuthorizationState(Service::SERVICE_ID);
+        $p = strrpos($raw, '-');
+        if ($p === false || $p < 1) {
+            return '';
         }
-        $matches = [];
-        if (preg_match('/\w+:(\d+)/', $chunks[0], $matches)) {
-            $chunks[0] = $matches[1];
+        $firstChunk = substr($raw, 0, $p);
+        $token = substr($raw, $p + 1);
+        $p = strrpos($firstChunk, ':');
+        if ($p === false) {
+            $base64Handle = $firstChunk;
+        } else {
+            $base64Handle = substr($firstChunk, $p + 1);
         }
-        $serverHandle = base64_decode($chunks[0], false);
+        if (!app('token')->validate('keycloak-serverconfiguration-' . $base64Handle, $token)) {
+            return '';
+        }
+        $serverHandle = base64_decode($base64Handle, false);
         if ($serverHandle === false || $serverHandle === '') {
-            return null;
-        }
-        $key = 'keycloak-serverconfiguration-' . $chunks[0];
-        if (!app('token')->validate($key, $chunks[1])) {
-            return null;
+            return '';
         }
         
         return $serverHandle;

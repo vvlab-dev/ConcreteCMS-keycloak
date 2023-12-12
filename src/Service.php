@@ -121,18 +121,15 @@ class Service extends AbstractService
      */
     public function generatePrefixedAuthorizationState($prefix)
     {
-        
         $serverConfiguration = $this->getServerConfiguration();
         if ($serverConfiguration === null) {
             throw new RuntimeException(t('The Keycloak server configuration is not defined'));
         }
         $base64Handle = rtrim(base64_encode($serverConfiguration->getHandle()), '=');
-        $key = 'keycloak-serverconfiguration-' . $base64Handle;
-        $token = app('token')->generate($key);
-        $result = $base64Handle . '-' . $token;
+        $token = app('token')->generate('keycloak-serverconfiguration-' . $base64Handle);
         $prefix = (string) $prefix;
         
-        return $prefix === '' ? $result : "{$prefix}:{$result}";
+        return $prefix === '' ? "{$base64Handle}-{$token}" : "{$prefix}:{$base64Handle}-{$token}";
     }
 
     /**
