@@ -128,7 +128,7 @@ class Service extends AbstractService
         $base64Handle = rtrim(base64_encode($serverConfiguration->getHandle()), '=');
         $token = app('token')->generate('keycloak-serverconfiguration-' . $base64Handle);
         $prefix = (string) $prefix;
-        
+
         return $prefix === '' ? "{$base64Handle}-{$token}" : "{$prefix}:{$base64Handle}-{$token}";
     }
 

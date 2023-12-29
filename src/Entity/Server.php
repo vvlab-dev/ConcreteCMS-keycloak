@@ -3,7 +3,6 @@
 namespace vvLab\KeycloakAuth\Entity;
 
 use JsonException;
-use OAuth\Common\Http\Uri\Uri;
 use RuntimeException;
 use vvLab\KeycloakAuth\Claim\Map;
 use vvLab\KeycloakAuth\ServerConfiguration;
@@ -504,17 +503,19 @@ class Server implements ServerConfiguration
 
     /**
      * @param string $endpointKey
+     * @param mixed $required
      *
      * @return string
      */
     private function getUrlFromConfig($endpointKey, $required)
     {
-        $openIDConfiguration =  $this->getOpenIDConfiguration();
+        $openIDConfiguration = $this->getOpenIDConfiguration();
         $endpoint = isset($openIDConfiguration[$endpointKey]) ? $openIDConfiguration[$endpointKey] : null;
         if (empty($endpoint) || !is_string($endpoint)) {
             if ($required) {
                 throw new RuntimeException(t('The keycloak server did not provide %s', $endpointKey));
             }
+
             return '';
         }
 

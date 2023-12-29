@@ -103,15 +103,17 @@ class ServiceFactory
             if ($serverConfiguration === null) {
                 throw new UserMessageException(t('No keycloak server/realm can handle the your email address.'));
             }
+
             return $serverConfiguration;
         }
-        
+
         $email = $this->getPostedEmail();
         if ($email !== '') {
             $serverConfiguration = $this->serverConfigurationProvider->getServerConfigurationByEmail($email);
             if ($serverConfiguration === null) {
                 throw new UserMessageException(t('No keycloak server/realm can handle the provided email address.'));
             }
+
             return $serverConfiguration;
         }
 
@@ -121,6 +123,7 @@ class ServiceFactory
             if ($serverConfiguration === null) {
                 throw new UserMessageException(t('No keycloak server/realm found with the provided handle.'));
             }
+
             return $serverConfiguration;
         }
 
@@ -170,7 +173,7 @@ class ServiceFactory
         if ($serverHandle === false || $serverHandle === '') {
             return '';
         }
-        
+
         return $serverHandle;
     }
 }

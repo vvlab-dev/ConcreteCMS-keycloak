@@ -25,7 +25,7 @@ class KeycloakMappings extends DashboardPageController
             $servers = $em->getRepository(Server::class)->findBy([], ['sort' => 'asc']);
             if (count($servers) === 1) {
                 $server = $servers[0];
-    
+
                 return $this->buildRedirect("/dashboard/system/registration/authentication/keycloak_mappings/edit/{$server->getID()}");
             }
             $this->set('servers', $servers);

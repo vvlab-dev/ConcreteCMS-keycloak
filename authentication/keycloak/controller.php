@@ -25,11 +25,11 @@ use Symfony\Component\EventDispatcher\GenericEvent;
 use Throwable;
 use vvLab\KeycloakAuth\Entity\Server;
 use vvLab\KeycloakAuth\Extractor;
+use vvLab\KeycloakAuth\OpenID\ConfigurationFetcher;
 use vvLab\KeycloakAuth\ServerConfigurationProvider;
 use vvLab\KeycloakAuth\Service;
 use vvLab\KeycloakAuth\ServiceFactory;
 use vvLab\KeycloakAuth\UI;
-use vvLab\KeycloakAuth\OpenID\ConfigurationFetcher;
 
 class Controller extends GenericOauth2TypeController
 {

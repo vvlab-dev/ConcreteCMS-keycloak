@@ -38,7 +38,7 @@ interface ServerConfiguration
      * @return string
      */
     public function getAuthorizationEndpointUrl();
-    
+
     /**
      * Get URL of the Get Access Token API endpoint.
      *

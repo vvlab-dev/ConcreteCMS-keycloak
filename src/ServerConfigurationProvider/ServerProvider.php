@@ -2,11 +2,11 @@
 
 namespace vvLab\KeycloakAuth\ServerConfigurationProvider;
 
+use Concrete\Core\Error\UserMessageException;
 use Doctrine\ORM\EntityManagerInterface;
+use RuntimeException;
 use vvLab\KeycloakAuth\Entity\Server;
 use vvLab\KeycloakAuth\ServerConfigurationProvider;
-use Concrete\Core\Error\UserMessageException;
-use RuntimeException;
 
 final class ServerProvider implements ServerConfigurationProvider
 {
@@ -62,7 +62,7 @@ final class ServerProvider implements ServerConfigurationProvider
                     $err = '';
                     $match = preg_match('{' . $regex . '}i', $email);
                     if ($match === false) {
-                        throw new RuntimeException(t('Error in the following regular expression:') . "\n{$regex}\n" .  t('Error detail: %s', $err));
+                        throw new RuntimeException(t('Error in the following regular expression:') . "\n{$regex}\n" . t('Error detail: %s', $err));
                     }
                     if ($match !== 0) {
                         return $server;
