@@ -1,3 +1,5 @@
+[![Tests](https://github.com/vvlab-dev/ConcreteCMS-keycloak/actions/workflows/tests.yml/badge.svg)](https://github.com/vvlab-dev/ConcreteCMS-keycloak/actions/workflows/tests.yml)
+
 # Keycloak Authentication for Concrete CMS
 
 This package provides a concrete5/ConcreteCMS authentication type that interacts with a [Keycloak](https://www.keycloak.org/) server to authorize users.
