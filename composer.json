@@ -1,24 +1,37 @@
 {
     "name": "vvlab/keycloak_auth",
-    "description": "Let users access your website using Keycloak OpenID servers.",
+    "description": "Let users access your website using Keycloak OpenID servers",
     "type": "concrete5-package",
-    "license": "proprietary",
+    "keywords": [
+        "concrete5",
+        "concretecms",
+        "keycloak",
+        "openid",
+        "authentication"
+    ],
+    "homepage": "https://github.com/vvlab-dev/ConcreteCMS-keycloak",
+    "license": "AGPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Valerio Vinci",
+            "email": "dev-support@vvlab.it"
+        }
+    ],
+    "support": {
+        "email": "dev-support@vvlab.it",
+        "issues": "https://github.com/vvlab-dev/ConcreteCMS-keycloak/issues",
+        "source": "https://github.com/vvlab-dev/ConcreteCMS-keycloak"
+    },
+    "require": {
+        "php": "^7.1 || ^8",
+        "concrete5/core": "^8.5.10 || ^9"
+    },
     "autoload": {
         "psr-4": {
             "vvLab\\KeycloakAuth\\": "src/"
         }
     },
-    "authors": [
-        {
-            "name": "vvLab",
-            "email": "info@vvlab.it"
-        }
-    ],
     "minimum-stability": "stable",
-    "require": {
-        "php": "^7.1 || ^8",
-        "concrete5/core": "^8.5.10 || ^9"
-    },
     "config": {
         "optimize-autoloader" : true,
         "preferred-install": "dist",
