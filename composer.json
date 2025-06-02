@@ -15,5 +15,16 @@
         }
     ],
     "minimum-stability": "stable",
-    "require": {}
+    "require": {
+        "php": "^7.1 || ^8",
+        "concrete5/core": "^8.5.10 || ^9"
+    },
+    "config": {
+        "optimize-autoloader" : true,
+        "preferred-install": "dist",
+        "sort-packages" : true,
+        "platform": {
+            "php": "7.1"
+        }
+    }
 }

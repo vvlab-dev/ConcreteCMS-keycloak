@@ -109,7 +109,7 @@ class Rule implements JsonSerializable
     /**
      * @return bool
      */
-    public function validate(ErrorList $errors = null)
+    public function validate(?ErrorList $errors = null)
     {
         $result = true;
         if ($this->getRemoteGroupName() === '') {
@@ -175,7 +175,7 @@ class Rule implements JsonSerializable
      *
      * @return static|null
      */
-    public static function jsonUnserialize($data, ErrorList $errors = null)
+    public static function jsonUnserialize($data, ?ErrorList $errors = null)
     {
         if (!is_array($data)) {
             if ($errors !== null) {

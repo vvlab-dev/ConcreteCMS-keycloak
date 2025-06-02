@@ -64,7 +64,7 @@ class Controller extends GenericOauth2TypeController
     protected $serverConfigurationProvider;
 
     public function __construct(
-        AuthenticationType $type = null,
+        ?AuthenticationType $type,
         ServiceFactory $factory,
         ResolverManagerInterface $urlResolver,
         Repository $config,

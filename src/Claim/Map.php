@@ -197,7 +197,7 @@ class Map implements JsonSerializable
      *
      * @return \vvLab\KeycloakAuth\Claim\Map|null NULL in case of errors
      */
-    public static function unserialize($data, ErrorList $warnings = null)
+    public static function unserialize($data, ?ErrorList $warnings = null)
     {
         switch (gettype($data)) {
             case 'string':
@@ -225,7 +225,7 @@ class Map implements JsonSerializable
      *
      * @return \vvLab\KeycloakAuth\Claim\Map|null NULL in case
      */
-    protected static function unserializeString($string, ErrorList $warnings = null)
+    protected static function unserializeString($string, ?ErrorList $warnings = null)
     {
         if ($string === '' || $string === 'null') {
             if ($warnings !== null) {
@@ -258,7 +258,7 @@ class Map implements JsonSerializable
         return static::unserializeArray($data, $warnings);
     }
 
-    protected static function unserializeArray(array $data, ErrorList $warnings = null)
+    protected static function unserializeArray(array $data, ?ErrorList $warnings = null)
     {
         $app = app();
         if ($warnings === null) {
