@@ -27,6 +27,11 @@ $monospaceAttr = ($ui->majorVersion >= 9 ? ['class' => 'font-monospace'] : ['sty
 <div id="keycloakauth-config" v-cloak>
     <div v-if="visible">
 
+        <div class="alert alert-danger">
+            <strong><?= t('IMPORTANT') ?></strong>
+            <?= t("Please remark that you'll need to update the Keycloak server configuration if you change the URL of this website, or if you change the Concrete configuration about pretty URLs.") ?>
+        </div>
+
         <div v-if="servers !== null">
             <div class="alert alert-info">
                 <?= t('Set the "Redirect URI" to: %s', '<code>' . h($callbackUrl) . '</code>') ?>
