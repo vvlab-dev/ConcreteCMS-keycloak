@@ -409,7 +409,7 @@ class Server implements ServerConfiguration
      *
      * @return $this
      */
-    public function setClaimMap(Map $value = null)
+    public function setClaimMap(?Map $value = null)
     {
         $this->claimMap = $value === null ? '' : $value->serialize(false);
 
@@ -464,7 +464,7 @@ class Server implements ServerConfiguration
      *
      * @return $this
      */
-    public function setLastLoggedReceivedClaims(array $value = null)
+    public function setLastLoggedReceivedClaims(?array $value = null)
     {
         $this->lastLoggedReceivedClaims = $value === null ? '' : json_encode($value, JSON_UNESCAPED_LINE_TERMINATORS | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
 

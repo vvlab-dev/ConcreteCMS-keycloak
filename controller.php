@@ -24,6 +24,13 @@ class Controller extends Package implements ProviderAggregateInterface
     protected $appVersionRequired = '8.5.10';
 
     /**
+     * {@inheritdoc}
+     *
+     * @see \Concrete\Core\Package\Package::$phpVersionRequired
+     */
+    protected $phpVersionRequired = '7.1';
+
+    /**
      * The unique handle that identifies the package.
      *
      * @var string

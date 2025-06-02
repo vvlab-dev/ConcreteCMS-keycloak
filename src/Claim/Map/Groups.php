@@ -103,7 +103,7 @@ class Groups implements JsonSerializable
      *
      * @return static|null
      */
-    public static function jsonUnserialize($data, ErrorList $errors = null)
+    public static function jsonUnserialize($data, ?ErrorList $errors = null)
     {
         if (!is_array($data)) {
             if ($errors !== null) {
