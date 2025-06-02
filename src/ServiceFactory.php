@@ -127,6 +127,10 @@ class ServiceFactory
             return $serverConfiguration;
         }
 
+        if (!$this->serverConfigurationProvider->isEmailRequired()) {
+            return $this->serverConfigurationProvider->getServerConfigurationByEmail('');
+        }
+
         throw new RuntimeException(t('Unable to detect the user state'));
     }
 
