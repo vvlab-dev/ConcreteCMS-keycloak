@@ -352,7 +352,7 @@ function initialize(Vue, config)
                     realmRootUrl: '',
                     clientID: '',
                     clientSecret: '',
-                    registrationEnabled: false,
+                    registrationEnabled: true,
                     logoutOnLogout: false,
                     registrationGroupID: null,
                     emailRegexes: '',
