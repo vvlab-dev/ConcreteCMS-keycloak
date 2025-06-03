@@ -18,7 +18,7 @@ It may work with other Keycloak versions, as well as with other OpenID servers.
 
 Install the **Authentication with Keycloak** ConcreteCMS package with one of the following options:
 
-- Via the ConcreteCMS marketplace
+- Via the [ConcreteCMS marketplace](https://market.concretecms.com/products/authentication-keycloak/62291e11-4084-11f0-abb4-0e1cf28cdc53)
 - By downloading the `keycloak_auth-vX.Y.Z.zip` file from the [release page](https://github.com/vvlab-dev/ConcreteCMS-keycloak/releases/latest)
 - With [composer](https://getcomposer.org/) by running
   ```
