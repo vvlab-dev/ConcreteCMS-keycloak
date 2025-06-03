@@ -9,6 +9,8 @@ defined('C5_EXECUTE') or die('Access denied.');
  * @var string $callbackUrl
  * @var bool $enableAttach
  * @var bool $enableDetach
+ * @var bool $updateUsername
+ * @var bool $updateEmail
  * @var bool $logoutOnLogoutEnabled
  * @var vvLab\KeycloakAuth\UI $ui
  * @var Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface $urlResolver
@@ -58,6 +60,18 @@ $monospaceAttr = ($ui->majorVersion >= 9 ? ['class' => 'font-monospace'] : ['sty
                 <label for="enableDetach">
                     <?= $form->checkbox('enableDetach', '1', $enableDetach) ?>
                     <span><?= t('Enable detaching local users from remote accounts') ?></span>
+                </label>
+            </div>
+            <div class="checkbox">
+                <label for="updateUsername">
+                    <?= $form->checkbox('updateUsername', '1', $updateUsername) ?>
+                    <span><?= t('Try to update usernames') ?></span>
+                </label>
+            </div>
+            <div class="checkbox">
+                <label for="updateEmail">
+                    <?= $form->checkbox('updateEmail', '1', $updateEmail) ?>
+                    <span><?= t('Update email addresses') ?></span>
                 </label>
             </div>
             <div class="checkbox" v-if="servers !== null">

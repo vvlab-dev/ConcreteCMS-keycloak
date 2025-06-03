@@ -136,6 +136,7 @@ class Map implements JsonSerializable
             ->mapField(Extractor::FIELD_FIRST_NAME, Standard::FIRST_NAME)
             ->mapField(Extractor::FIELD_LAST_NAME, Standard::LAST_NAME)
             ->mapField(Extractor::FIELD_FULL_NAME, Standard::FULL_NAME)
+            ->mapField(Extractor::FIELD_USERNAME, Standard::PREFERRED_USERNAME)
         ;
 
         return $result;
