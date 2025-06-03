@@ -13,7 +13,7 @@ interface ServerConfigurationProvider
 
     /**
      * Get the server/realm configuration to be used with the specified email address.
-     * If isEmailRequired() returns false, $email will be an empty.
+     * If isEmailRequired() returns false, $email will be an empty string.
      *
      * @param string $email
      *
@@ -29,12 +29,4 @@ interface ServerConfigurationProvider
      * @return \vvLab\KeycloakAuth\ServerConfiguration|null
      */
     public function getServerConfigurationByHandle($handle);
-
-    /*
-... Realm root URL (https://www.domain.com/realms/<realm>)
-... Client ID
-... Client Secret
-[ ] Allow automatic registration
-[ ] Logout from authentication server when logging out from this website
-     */
 }

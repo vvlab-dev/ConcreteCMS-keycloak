@@ -169,7 +169,7 @@ defined('C5_EXECUTE') or die('Access Denied.');
         <div v-if="lastLoggedReceivedClaims === null">
             <?= t('The log of the last received claims is empty.') ?><br />
             <div v-if="logNextReceivedClaims">
-                <?= t("You can try to log in using KeyCloak: we'll display the claims below.") ?><br />
+                <?= t("You can try to log in using Keycloak: we'll display the claims below.") ?><br />
                 <button type="button" class="btn btn-sm btn-secondary btn-default" v-on:click.prevent="doLastLoggedReceivedClaimsOperation('refresh')" v-bind:disabled="busy"><?= t('Refresh') ?></button>
                 <button type="button" class="btn btn-sm btn-secondary btn-default" v-on:click.prevent="doLastLoggedReceivedClaimsOperation('disable')" v-bind:disabled="busy"><?= t('Cancel') ?></button>
             </div>
