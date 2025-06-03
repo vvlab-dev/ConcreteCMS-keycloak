@@ -24,7 +24,7 @@
     },
     "require": {
         "php": "^7.1 || ^8",
-        "concrete5/core": "^8.5.10 || ^9"
+        "concrete5/core": "^8.5.12 || ^9"
     },
     "autoload": {
         "psr-4": {
