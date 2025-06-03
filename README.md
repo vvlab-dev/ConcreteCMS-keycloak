@@ -1,5 +1,13 @@
 [![Tests](https://github.com/vvlab-dev/ConcreteCMS-keycloak/actions/workflows/tests.yml/badge.svg)](https://github.com/vvlab-dev/ConcreteCMS-keycloak/actions/workflows/tests.yml)
 
+## Requirements
+
+This package allows you to log in your ConcreteCMS website by using an OpenID Keycloak server.
+
+We developed this package testing it with Keycloak versions 25.0, 26.1, and 26.2.
+It may work with other Keycloak versions, as well as with other OpenID servers.
+
+
 ## Installation
 
 Install the **Authentication with Keycloak** ConcreteCMS package with one of the following options:
