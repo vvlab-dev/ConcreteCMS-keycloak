@@ -127,6 +127,8 @@ EOT
         $em = $this->app->make(EntityManagerInterface::class);
         $this->set('enableAttach', $this->config->get('keycloak_auth::options.enableAttach') ? true : false);
         $this->set('enableDetach', $this->config->get('keycloak_auth::options.enableDetach') ? true : false);
+        $this->set('updateUsername', $this->config->get('keycloak_auth::options.updateUsername') ? true : false);
+        $this->set('updateEmail', $this->config->get('keycloak_auth::options.updateEmail') ? true : false);
         $this->set('callbackUrl', $this->getCallbackUrl());
         $list = $this->app->make(GroupList::class);
         $this->set('groups', $list->getResults());
@@ -186,6 +188,8 @@ EOT
         }
         $this->config->save('keycloak_auth::options.enableAttach', !empty($args['enableAttach']));
         $this->config->save('keycloak_auth::options.enableDetach', !empty($args['enableDetach']));
+        $this->config->save('keycloak_auth::options.updateUsername', !empty($args['updateUsername']));
+        $this->config->save('keycloak_auth::options.updateEmail', !empty($args['updateEmail']));
         $this->authenticationType->setAuthenticationTypeName($passedName);
     }
 
@@ -545,22 +549,39 @@ EOT
         if ($serverConfiguration === null) {
             return;
         }
-        $email = null;
+        $userID = (int) $userService->getUserID();
         $userInfo = null;
-        if ($extractor->supportsEmail()) {
-            $email = $extractor->getEmail();
-            if (!$email) {
+        $email = $extractor->supportsEmail() ? (string) $extractor->getEmail() : '';
+        if ($email !== '') {
+            $userInfo = $this->userInfoRepository->getByEmail($email);
+            if ($userInfo) {
+                if ((int) $userInfo->getUserID() !== $userID) {
+                    throw new UserMessageException(t('Another user already exists with the provided email address.'));
+                }
+            }
+        }
+        if (!$userInfo) {
+            $userInfo = $this->userInfoRepository->getByID($userID);
+            if (!$userInfo) {
                 return;
             }
-            $userInfo = $this->userInfoRepository->getByEmail($email);
-            if ($userInfo && (int) $userInfo->getUserID() !== (int) $userService->getUserID()) {
-                throw new UserMessageException(t('Another user already exists with the provided email address.'));
-            }
-        } else {
-            $userInfo = $this->userInfoRepository->getByID($userService->getUserID());
         }
-        if ($userInfo === null) {
-            return;
+        $update = [];
+        if ($this->config->get('keycloak_auth::options.updateUsername') && $extractor->supportsUsername()) {
+            $preferredUsername = (string) $extractor->getUsername();
+            if ($preferredUsername !== '' && $preferredUsername !== $userInfo->getUserName() && strcasecmp($userInfo->getUserName(), USER_SUPER) !== 0) {
+                $existingUserInfo = $this->userInfoRepository->getByUserName($preferredUsername);
+                if (!$existingUserInfo || (int) $existingUserInfo->getUserID() !== $userID) {
+                    $update['uName'] = $preferredUsername;
+                    $userService->uName = $preferredUsername;
+                }
+            }
+            if ($email !== '' && $email !== $userInfo->getUserEmail()) {
+                $update['uEmail'] = $email;
+            }
+        }
+        if ($update !== []) {
+            $userInfo->update($update);
         }
         $map = $serverConfiguration->getClaimMap();
         foreach ($map->getAttributeList() as $claimID => $attributes) {
