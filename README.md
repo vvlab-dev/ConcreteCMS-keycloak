@@ -7,6 +7,12 @@ This package allows you to log in your ConcreteCMS website by using an OpenID Ke
 We developed this package testing it with Keycloak versions 25.0, 26.1, and 26.2.
 It may work with other Keycloak versions, as well as with other OpenID servers.
 
+## Features
+
+- Support for multiple Keycloak server and/or realms
+- Automatically update of ConcreteCMS user attributes and groups (so that they reflect the Keycloak user attributes and groups)
+- Built using the OpenID Connect standard: it *may* work with any single sign-on server that implements that standard
+
 
 ## Installation
 
