@@ -19,7 +19,6 @@ use Concrete\Core\User\Group\GroupList;
 use Concrete\Core\User\User;
 use Concrete\Core\User\UserInfoRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Exception;
 use OAuth\Common\Token\Exception\ExpiredTokenException;
 use OAuth\UserData\Extractor\ExtractorInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
@@ -148,7 +147,6 @@ EOT
             if ($this->request->isPost()) {
                 try {
                     $servers = $this->buildServersFromArgs($this->request->request->all(), $em, false);
-                } catch (Exception $_) {
                 } catch (Throwable $_) {
                 }
             }
@@ -420,7 +418,6 @@ EOT
                         }
                     }
                 }
-            } catch (Exception $_) {
             } catch (Throwable $_) {
             }
             $userID = $this->getBoundUserID($extractor->getUniqueId());

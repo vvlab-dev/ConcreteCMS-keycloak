@@ -8,7 +8,6 @@ use Concrete\Core\Http\Response;
 use Concrete\Core\Http\ResponseFactoryInterface;
 use Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface;
 use Concrete\Core\User\Event\Logout;
-use Exception;
 use Throwable;
 
 class BeforeLogoutListener
@@ -83,8 +82,6 @@ class BeforeLogoutListener
     {
         try {
             $type = AuthenticationType::getByHandle('keycloak');
-        } catch (Exception $x) {
-            return null;
         } catch (Throwable $x) {
             return null;
         }
