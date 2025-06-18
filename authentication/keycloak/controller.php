@@ -6,6 +6,7 @@ use Concrete\Core\Authentication\AuthenticationType;
 use Concrete\Core\Authentication\Type\OAuth\OAuth2\GenericOauth2TypeController;
 use Concrete\Core\Config\Repository\Repository;
 use Concrete\Core\Error\UserMessageException;
+use Concrete\Core\File\Service\File as FileService;
 use Concrete\Core\Form\Service\Form;
 use Concrete\Core\Form\Service\Widget\GroupSelector;
 use Concrete\Core\Http\Request;
@@ -63,6 +64,11 @@ class Controller extends GenericOauth2TypeController
      */
     protected $serverConfigurationProvider;
 
+    /**
+     * @var \Concrete\Core\File\Service\File
+     */
+    protected $fileService;
+
     public function __construct(
         ?AuthenticationType $type,
         ServiceFactory $factory,
@@ -71,7 +77,8 @@ class Controller extends GenericOauth2TypeController
         PackageService $packageService,
         UserInfoRepository $userInfoRepository,
         ServerConfigurationProvider $serverConfigurationProvider,
-        Request $request
+        Request $request,
+        FileService $fileService
     ) {
         parent::__construct($type);
         $this->request = $request;
@@ -81,6 +88,7 @@ class Controller extends GenericOauth2TypeController
         $this->packageService = $packageService;
         $this->userInfoRepository = $userInfoRepository;
         $this->serverConfigurationProvider = $serverConfigurationProvider;
+        $this->fileService = $fileService;
     }
 
     /**
@@ -102,10 +110,10 @@ class Controller extends GenericOauth2TypeController
     {
         $relPath = '/images/authentication/keycloak_auth.svg';
         $pkgController = $this->packageService->getClass('keycloak_auth');
-        $svgData = file_get_contents($pkgController->getPackagePath() . $relPath);
-        $publicSrc = REL_DIR_PACKAGES . $relPath;
+        $svgData = $this->fileService->getContents($pkgController->getPackagePath() . $relPath);
+        $publicSrc = h(REL_DIR_PACKAGES . $relPath);
 
-        return "<div class='ccm-concrete-authentication-type-svg' data-src='{$publicSrc}'>{$svgData}</div>";
+        return "<div class=\"ccm-concrete-authentication-type-svg\" data-src=\"{$publicSrc}\">{$svgData}</div>";
     }
 
     /**
