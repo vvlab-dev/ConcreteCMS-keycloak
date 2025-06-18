@@ -4,7 +4,6 @@ namespace vvLab\KeycloakAuth\OpenID;
 
 use Concrete\Core\Error\UserMessageException;
 use Concrete\Core\Http\Client\Client;
-use Exception;
 use League\Url\Url;
 use Throwable;
 use vvLab\KeycloakAuth\UI;
@@ -38,8 +37,6 @@ class ConfigurationFetcher
     {
         try {
             $url = Url::createFromUrl($realmRootUrl);
-        } catch (Exception $_) {
-            throw new UserMessageException(t('Please specify a valid root URL of the realm'));
         } catch (Throwable $_) {
             throw new UserMessageException(t('Please specify a valid root URL of the realm'));
         }
@@ -60,8 +57,6 @@ class ConfigurationFetcher
             if (!is_array($openIDConfiguration)) {
                 throw new UserMessageException(t('Invalid response from the Keycloak server'));
             }
-        } catch (Exception $x) {
-            throw new UserMessageException(t('Error while inspecting the URL %s', (string) $url) . "\n" . $x->getMessage());
         } catch (Throwable $x) {
             throw new UserMessageException(t('Error while inspecting the URL %s', (string) $url) . "\n" . $x->getMessage());
         }
