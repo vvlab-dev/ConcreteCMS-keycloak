@@ -70,10 +70,11 @@ class Controller extends GenericOauth2TypeController
         Repository $config,
         PackageService $packageService,
         UserInfoRepository $userInfoRepository,
-        ServerConfigurationProvider $serverConfigurationProvider
+        ServerConfigurationProvider $serverConfigurationProvider,
+        Request $request
     ) {
         parent::__construct($type);
-        $this->request = Request::getInstance();
+        $this->request = $request;
         $this->factory = $factory;
         $this->urlResolver = $urlResolver;
         $this->config = $config;
