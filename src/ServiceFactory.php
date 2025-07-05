@@ -101,7 +101,7 @@ class ServiceFactory
         if ($userInfo && !$userInfo->isError()) {
             $serverConfiguration = $this->serverConfigurationProvider->getServerConfigurationByEmail($userInfo->getUserEmail());
             if ($serverConfiguration === null) {
-                throw new UserMessageException(t('No keycloak server/realm can handle the your email address.'));
+                throw new UserMessageException(t('No keycloak server/realm can handle your email address.'));
             }
 
             return $serverConfiguration;

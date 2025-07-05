@@ -64,7 +64,7 @@ defined('C5_EXECUTE') or die('Access Denied.');
 
     <fieldset>
         <legend><?= t('User groups') ?></legend>
-        <div><?= t('Here you can define if users should join or leave local groups accordingly to the contents of the value of a claim.') ?></div>
+        <div><?= t('Here you can define if users should join or leave local groups accordingly to the value of a claim.') ?></div>
         <div class="row mb-3 form-group">
             <label class="form-label" for="kc-groups-claim">
                 <?= t('Claim ID') ?>
