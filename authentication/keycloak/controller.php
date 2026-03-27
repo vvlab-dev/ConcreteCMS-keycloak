@@ -68,6 +68,8 @@ class Controller extends GenericOauth2TypeController
      */
     protected $fileService;
 
+    private $additionalRequestParameters = [];
+
     public function __construct(
         ?AuthenticationType $type,
         ServiceFactory $factory,
@@ -262,6 +264,25 @@ EOT
     /**
      * {@inheritdoc}
      *
+     * @see \Concrete\Core\Authentication\Type\OAuth\OAuth2\GenericOauth2TypeController::handle_authentication_attempt()
+     */
+    public function handle_authentication_attempt()
+    {
+        if ($this->serverConfigurationProvider->isEmailRequired()) {
+            if ($this->request->getMethod() === 'POST') {
+                $email = $this->request->request->get('email');
+                $email = is_string($email) ? trim($email) : '';
+                if ($email !== '') {
+                    $this->additionalRequestParameters['login_hint'] = $email;
+                }
+            }
+        }
+        return parent::handle_authentication_attempt();
+    }
+    
+    /**
+     * {@inheritdoc}
+     *
      * @see \Concrete\Core\Authentication\Type\OAuth\OAuth2\GenericOauth2TypeController::handle_attach_attempt()
      */
     public function handle_attach_attempt()
@@ -273,6 +294,16 @@ EOT
         );
 
         return new RedirectResponse((string) $url);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \Concrete\Core\Authentication\Type\OAuth\GenericOauthTypeController::getAdditionalRequestParameters()
+     */
+    public function getAdditionalRequestParameters()
+    {
+        return $this->additionalRequestParameters + parent::getAdditionalRequestParameters();        
     }
 
     /**
